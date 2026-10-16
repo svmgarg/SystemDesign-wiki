@@ -1,0 +1,48 @@
+:root {
+  --md-text-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --md-code-font: Consolas, "Cascadia Code", monospace;
+}
+
+.md-grid {
+  max-width: 82rem;
+}
+
+.md-typeset {
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.md-typeset h1 {
+  margin-bottom: 1rem;
+  font-size: 1.65rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.md-typeset h2 {
+  margin-top: 1.6rem;
+  font-size: 1.2rem;
+  font-weight: 650;
+}
+
+.md-typeset h3 {
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.md-typeset li {
+  margin-bottom: 0.3em;
+}
+
+.md-typeset :is(td, th) {
+  overflow-wrap: anywhere;
+}
+
+.md-typeset img {
+  height: auto;
+  max-width: 100%;
+}
+
+.md-content {
+  min-width: 0;
+}
