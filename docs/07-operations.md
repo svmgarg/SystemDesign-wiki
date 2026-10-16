@@ -200,4 +200,4 @@ back a release that wrote a new data format?
     - Check successful requests, response time, correct data, and delayed work after
       recovery, not just whether the process runs. Check data-loss and recovery-time limits.
 
-[Next: URL Shortener →](designs/url-shortener.md)
+[Next: URL Shortener →](designs/url-shortener/index.md)

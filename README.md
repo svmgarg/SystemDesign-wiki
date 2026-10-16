@@ -20,7 +20,7 @@ background work, reliability, and operations. The design chapters show how a
 service uses these concepts together.
 
 If you prefer to begin with a service, read the
-[URL Shortener](docs/designs/url-shortener.md) first. Follow how the service
+[URL Shortener](docs/designs/url-shortener/index.md) first. Follow how the service
 creates a link, saves its mapping, and redirects a user who opens it. Then use
 the foundation chapters to study the underlying concepts.
 
@@ -47,6 +47,9 @@ label such as "persistent lookup mapping."
 - Repeat a technical noun when a pronoun would make the meaning unclear.
 - State assumptions and explain what each design choice costs or cannot guarantee.
 - Keep advanced details separate and preserve working examples, diagrams, and links.
+- Split a design by reader task when useful, not by word count or a fixed page template.
+- Label exercises as conceptual or hands-on. Supply the assumptions, required material,
+  and completion criteria; a hands-on lab also needs a runnable environment and steps.
 
 The wiki supports learning and reference. Its example targets and designs are
 not measured production guarantees.
@@ -83,6 +86,7 @@ restart the MkDocs server so it loads the updated packages and configuration.
 | Path | Purpose |
 | --- | --- |
 | `docs/` | Course Markdown, diagrams, and restrained typography CSS |
+| `docs/designs/url-shortener/` | URL Shortener overview, request flows and exercise, API/data contract, scaling and failures, and local diagrams |
 | `mkdocs.yml` | Material theme, grouped navigation, extensions |
 | `requirements.txt` | MkDocs and Material dependencies |
 | `site/` | Ignored, disposable build output |

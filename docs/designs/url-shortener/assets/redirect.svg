@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="404" viewBox="0 0 360 404" role="img" aria-labelledby="title desc">
+  <title id="title">Opening a short URL</title>
+  <desc id="desc">The browser requests a short URL. The service finds the mapping in its database and returns a 302 response with a Location header. The browser then requests the original website directly.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#475569"/></marker>
+  </defs>
+  <rect width="360" height="404" rx="12" fill="#fff"/>
+  <g font-family="Segoe UI,Arial,sans-serif" text-anchor="middle" fill="#0f172a">
+    <rect x="20" y="16" width="320" height="64" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+    <text x="180" y="43" font-size="18">1. Browser opens the short URL</text>
+    <text x="180" y="65" font-size="16">GET /system-design</text>
+    <path d="M180 81V109" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="20" y="116" width="320" height="64" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+    <text x="180" y="143" font-size="18">2. Service finds the mapping</text>
+    <text x="180" y="165" font-size="16">Read the database using the key</text>
+    <path d="M180 181V209" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="20" y="216" width="320" height="64" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+    <text x="180" y="243" font-size="18">3. Service returns the redirect</text>
+    <text x="180" y="265" font-size="16">302 + Location: original URL</text>
+    <path d="M180 281V309" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="20" y="316" width="320" height="64" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+    <text x="180" y="343" font-size="18">4. Browser follows Location</text>
+    <text x="180" y="365" font-size="16">Request goes to the original website</text>
+  </g>
+</svg>

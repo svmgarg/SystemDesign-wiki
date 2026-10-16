@@ -7,7 +7,6 @@ theme:
   font: false
   features:
     - navigation.sections
-    - navigation.footer
     - navigation.top
     - toc.follow
     - search.suggest
@@ -41,7 +40,11 @@ nav:
       - Reliability: 06-reliability.md
       - Security & Operations: 07-operations.md
   - Designs:
-      - URL Shortener: designs/url-shortener.md
+      - URL Shortener:
+          - Overview: designs/url-shortener/index.md
+          - Request flows & exercise: designs/url-shortener/request-flows.md
+          - API & data: designs/url-shortener/api-and-data.md
+          - Scaling & failures: designs/url-shortener/scaling-and-failures.md
       - Notifications: designs/notification-service.md
       - Distributed Cache: designs/distributed-cache.md
   - Practice:

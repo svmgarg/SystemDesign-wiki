@@ -14,11 +14,9 @@ or expired, the cache returns a **miss**. The application then reads the databas
 saves a copy in the cache for future lookups, and returns the record.
 This process is called **cache-aside** because the application manages cache reads and fills.
 
-```text
-Application -- GET(key) --> Cache -- hit --> return cached value
-                |
-                +-- miss --> Database --> return row and cache a copy
-```
+[![The application checks the cache, returns a usable hit, or reads the database on a miss and saves a copy.](../assets/cache-aside.svg)](../assets/cache-aside.svg)
+
+[Open the cache-aside diagram at full size](../assets/cache-aside.svg).
 
 When the application updates a record, it commits the database change and then
 invalidates (deletes) the cached copy. Another reader may still receive **stale data**,
@@ -46,7 +44,8 @@ host or availability zone, so one infrastructure failure is less likely to remov
 | --- | --- |
 | Workload | 20,000 reads/s; target 95% hit ratio; five million resident records |
 | Value size | Average 512 bytes before key and storage overhead |
-| Freshness | TTL chosen between 45 and 60 seconds; stronger bounds discussed below |
+| Entry lifetime | TTL chosen between 45 and 60 seconds; this alone does not bound data age |
+| Freshness | Briefly stale descriptions are allowed; a stronger age bound needs the conditions in [Read, update, and expiry semantics](#read-update-and-expiry-semantics) |
 | Latency budget | Example 100 ms application read deadline; cache attempts get 10 ms total |
 | Data placement | Four primary shards, each with one asynchronous replica in another failure domain |
 | Reads and updates | Read primaries; commit database writes before invalidating cache |
@@ -57,9 +56,16 @@ These figures are design inputs. The team must measure whether the implementatio
 
 ## Read the supplied architecture
 
-![Distributed cache architecture](../assets/distributed-cache.png)
+[![The application cache client uses its local topology map to choose a primary node; that node asynchronously replicates changes to a replica.](../assets/cache-routing.svg)](../assets/cache-routing.svg)
 
-[Download the editable Excalidraw source](../assets/DistributedCache.excalidraw)
+This focused diagram shows request routing. The coordinator updates the client's
+map when ownership changes; it is not contacted for each normal read.
+
+??? info "Original complete architecture sketch"
+    [![Original distributed cache architecture showing applications, cache clients, coordinator, shards, and replicas.](../assets/distributed-cache.png)](../assets/distributed-cache.png)
+
+    [Open the original image at full size](../assets/distributed-cache.png).
+    [Download the editable Excalidraw source](../assets/DistributedCache.excalidraw).
 
 The artwork and editable source are unchanged. Each cache server is a **node**.
 The cache client library, labelled CC, runs inside each application. It keeps a local
@@ -242,11 +248,58 @@ They also measure how far replicas lag, how old each client's map is, how long r
 takes, and how long invalidations wait. Sampled database/cache versions help detect stale
 values. Operators alert on falling hits with rising database demand and test recovery.
 
-**Exercise:** send 20,000 unique reads/s and make the cache unreachable. Check that the
-applications send at most 2,000 fallback reads/s, bound their queues, and reject or degrade
-excess requests. Add application instances and confirm that the total limit does not rise.
-Restore the cache gradually. Then disconnect a primary or coordinator, delay a client's
-map refresh, and reproduce the stale-fill race. Check that replacement preserves fencing
-and expiry. The cache must rebuild from the database, never become the only durable truth.
+## Conceptual exercise: cache outage
+
+**Required material:** the capacity and failure-handling sections above.
+No running application, cache, or load generator is required. Write calculations
+and explain the request-handling policy.
+
+Assume:
+
+- The application receives 20,000 reads/s. Normally, 95% are cache hits.
+- Each cache miss makes one database read; ignore other database work in the calculation.
+- During the outage, no cached values are available and all requests use different keys,
+  so requests cannot share a lookup.
+- The database has capacity reserved for at most 2,000 fallback reads/s.
+  The limit applies across all application instances, including retries.
+- Traffic continues at the same rate; an ever-growing queue is not an acceptable solution.
+
+**Tasks**
+
+1. Calculate normal database reads/s and the possible rate during the outage.
+2. Calculate how many outage requests per second cannot receive a database result.
+3. Explain how rate, concurrency, queue, and deadline limits protect the database.
+4. Explain what happens to the global limit when application instances are added,
+   and how you would refill a recovered cache without another traffic surge.
+
+**Completion criteria:** your answer gives the three rates, explains rejection
+or an explicitly permitted degraded response, keeps the 2,000/s limit global,
+and bounds waiting work. It does not invent product data or treat a database
+error as a missing record.
+
+??? success "Check your answer"
+    Normal database demand is `20,000 x 0.05 = 1,000 reads/s`. Without the cache,
+    all 20,000 requests/s could reach the database: 20 times normal demand.
+
+    With a 2,000/s fallback budget, at least `20,000 - 2,000 = 18,000 requests/s`
+    cannot receive a database lookup. Reject those requests or use a degraded
+    response only if the product permits it. A queue cannot absorb a sustained
+    excess indefinitely.
+
+    Share a global allowance or allocate per-instance quotas whose sum stays
+    within it. Adding instances must not multiply the budget. Also limit active
+    reads, waiting requests, and total waiting time because a rate limit alone
+    does not bound simultaneous slow calls.
+
+    Refill gradually within the same database budget. A cache that has restarted
+    may still be empty; do not remove protection simply because it responds again.
+
+### Optional implementation project
+
+This wiki supplies a design, not an executable cache cluster. After building
+an implementation, use the assumptions above as an outage test and record
+observed request rates, latency, queue lengths, and rejected work. Test primary
+and coordinator loss separately, including stale maps, delayed fills, fencing,
+and expiry. Compare those observations with the design's stated policies.
 
 **Related:** [Notification service](notification-service.md) — durable retry boundaries.

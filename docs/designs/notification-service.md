@@ -31,7 +31,9 @@ After a restart, the relay can still find that row and publish the message.
 
 The caller may repeat a request if it loses the API response. **Idempotency** means the repeat creates no new notification.
 **Deduplication** means recognizing a repeated request or event instead of treating it as new work.
-The queue provides **at-least-once processing**: a worker may process a message again.
+The queue uses **at-least-once delivery**: it may deliver the same message again
+until acknowledged, within its retention and retry policies. Successful processing
+still depends on the worker; delivery does not guarantee that sending completes.
 These checks prevent repeated local work, but they cannot prove that an email was
 sent only once. The provider may accept a submission even if its response is lost.
 
@@ -278,4 +280,4 @@ lookup nor deduplication, retrying may send a duplicate and not retrying may mis
 email. The queue and outbox preserve work; neither tells the service which happened.
 
 **Next:** [Distributed cache](distributed-cache.md).
-**Compare:** [URL shortener](url-shortener.md) — repeatable reads vs external effects.
+**Compare:** [URL shortener](url-shortener/index.md) — repeatable reads vs external effects.

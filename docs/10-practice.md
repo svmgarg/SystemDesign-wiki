@@ -6,6 +6,10 @@ This page helps learners who have read the foundations practice designing a smal
 Engineers can also use the questions to review a design. The exercises ask you to explain
 what the service does, where it stores information, and what happens when a request fails.
 
+Both exercises below are **conceptual**: write calculations, a diagram, and an
+explanation using the supplied assumptions. No application, database, or provider
+account is required. Each exercise states how to assess a complete answer.
+
 Attempt each exercise before opening its answer guidance. Write down your assumptions and
 draw the steps for one successful request. State which rule the service must always enforce.
 Then explain what happens if two requests arrive together, a user retries, or a dependency
@@ -14,7 +18,7 @@ is unavailable. Different designs can work if they meet the requirements and exp
 Use [Requirements](01-thinking.md) to decide what the service must do, [Storage](03-storage.md)
 to decide how it saves information, and [Messaging](05-async.md) to decide how it handles work later.
 Use the pocket reference when a term is unfamiliar; you do not need to memorize the terms.
-For longer worked examples, compare your reasoning with [URL Shortener](designs/url-shortener.md),
+For longer worked examples, compare your reasoning with [URL Shortener](designs/url-shortener/index.md),
 [Notifications](designs/notification-service.md), and [Distributed Cache](designs/distributed-cache.md).
 
 ## Run a 45-minute design session
@@ -59,6 +63,10 @@ specific physical copy. Do not include loans, waiting lists, or payments.
 4. Suppose the database saves a reservation but the response is lost. Explain how the
    service recognizes a retry, checks the member's access, and returns the saved result.
    State how long the service keeps that result and what the member should do afterward.
+
+**Completion criteria:** show both peak rates with units, identify the database
+operation that prevents conflicting reservations, and explain how a retry
+returns the original result without bypassing ownership checks.
 
 ??? success "Answer guidance"
     Start with an API and a relational database. Peak catalog reads are
@@ -109,6 +117,10 @@ Explain separately when the worker has finished and what the service knows about
 3. Follow a job whose worker crashes after the provider accepts the email but before the
    worker tells the queue it has finished. Explain whether another worker could send it again.
 4. Define what a completed job means. Choose measurements that show when reminders are delayed.
+
+**Completion criteria:** calculate the backlog and finish time, explain when
+the worker acknowledges work, distinguish provider acceptance from delivery,
+and describe why a provider timeout can leave the outcome unknown.
 
 ??? success "Answer guidance"
     Jobs arrive at `60,000 / 600 = 100 jobs/sec`, but workers complete only 80/sec.
