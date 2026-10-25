@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="690" viewBox="0 0 720 690" role="img" aria-labelledby="title desc">
+  <title id="title">How HTTP versions share connections</title>
+  <desc id="desc">HTTP/1.1 commonly uses separate TCP connections for parallel requests. HTTP/2 mixes frames from several streams on one TCP connection, but missing TCP bytes can delay all streams. HTTP/3 uses streams on one QUIC connection over UDP, where missing data in one stream need not block delivery in another.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#475569"/></marker>
+  </defs>
+  <rect width="720" height="690" rx="12" fill="#fff"/>
+  <g font-family="Segoe UI,Arial,sans-serif" fill="#0f172a">
+    <text x="24" y="32" font-size="20" font-weight="600">Three requests: product, reviews, and delivery</text>
+    <rect x="16" y="50" width="688" height="180" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+    <text x="34" y="78" font-size="18" font-weight="600">HTTP/1.1: commonly use several TCP connections</text>
+    <text x="34" y="108" font-size="15">Client</text>
+    <text x="624" y="108" font-size="15">Server</text>
+    <g stroke="#475569" stroke-width="2" marker-end="url(#arrow)">
+      <path d="M105 127H610"/>
+      <path d="M105 162H610"/>
+      <path d="M105 197H610"/>
+    </g>
+    <g text-anchor="middle" font-size="15">
+      <rect x="190" y="112" width="320" height="24" rx="4" fill="#e0f2fe"/>
+      <text x="350" y="129">TCP connection 1: product</text>
+      <rect x="190" y="147" width="320" height="24" rx="4" fill="#dcfce7"/>
+      <text x="350" y="164">TCP connection 2: reviews</text>
+      <rect x="190" y="182" width="320" height="24" rx="4" fill="#fef3c7"/>
+      <text x="350" y="199">TCP connection 3: delivery</text>
+    </g>
+    <rect x="16" y="248" width="688" height="190" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+    <text x="34" y="278" font-size="18" font-weight="600">HTTP/2: several streams on one TCP connection</text>
+    <text x="34" y="307" font-size="15">Client</text>
+    <text x="624" y="307" font-size="15">Server</text>
+    <path d="M105 345H610" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+    <g text-anchor="middle" font-size="14">
+      <rect x="120" y="326" width="105" height="36" rx="4" fill="#e0f2fe" stroke="#0284c7"/>
+      <text x="172" y="349">Product</text>
+      <rect x="240" y="326" width="105" height="36" rx="4" fill="#dcfce7" stroke="#15803d"/>
+      <text x="292" y="349">Reviews</text>
+      <rect x="360" y="326" width="105" height="36" rx="4" fill="#fef3c7" stroke="#a16207"/>
+      <text x="412" y="349">Delivery</text>
+      <rect x="480" y="326" width="105" height="36" rx="4" fill="#e0f2fe" stroke="#0284c7"/>
+      <text x="532" y="349">Product</text>
+    </g>
+    <text x="34" y="393" font-size="15">Each box is a frame. Frames from different streams share TCP.</text>
+    <text x="34" y="418" font-size="15">Missing TCP bytes can hold up delivery for every stream.</text>
+    <rect x="16" y="456" width="688" height="218" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+    <text x="34" y="486" font-size="18" font-weight="600">HTTP/3: independent delivery on QUIC streams</text>
+    <rect x="105" y="503" width="505" height="120" rx="8" fill="#fff" stroke="#64748b" stroke-dasharray="5 4"/>
+    <g stroke="#475569" stroke-width="2" marker-end="url(#arrow)">
+      <path d="M120 526H590"/>
+      <path d="M120 563H590"/>
+      <path d="M120 600H590"/>
+    </g>
+    <g text-anchor="middle" font-size="15">
+      <rect x="205" y="511" width="300" height="24" rx="4" fill="#e0f2fe"/>
+      <text x="355" y="528">Product stream</text>
+      <rect x="205" y="548" width="300" height="24" rx="4" fill="#dcfce7"/>
+      <text x="355" y="565">Reviews stream</text>
+      <rect x="205" y="585" width="300" height="24" rx="4" fill="#fef3c7"/>
+      <text x="355" y="602">Delivery stream</text>
+    </g>
+    <text x="34" y="646" font-size="15">One QUIC connection over UDP, with TLS 1.3 security.</text>
+    <text x="34" y="666" font-size="15">Loss in one stream need not block delivery on other streams.</text>
+  </g>
+</svg>

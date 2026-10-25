@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1360" height="224" viewBox="0 0 1360 224" role="img" aria-labelledby="title desc">
+  <title id="title">Notification submission architecture</title>
+  <desc id="desc">From left to right, a trusted application calls the API, which saves a notification and outbox row in one transaction. An outbox relay publishes to a durable queue. A worker checks preferences, records attempts, and submits to the email provider. Status reads and authenticated provider callbacks are separate database paths.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#475569"/></marker>
+  </defs>
+  <rect width="1360" height="224" rx="12" fill="#fff"/>
+  <g font-family="Segoe UI,Arial,sans-serif" text-anchor="middle" fill="#0f172a">
+    <text x="680" y="29" font-size="20" font-weight="600">Notification service: durable submission path</text>
+    <rect x="16" y="58" width="160" height="138" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+    <text x="96" y="93" font-size="17">Trusted app</text>
+    <text x="96" y="132" font-size="14">Recipient + template</text>
+    <text x="96" y="157" font-size="14">Idempotency key</text>
+    <path d="M184 127H200" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="208" y="58" width="160" height="138" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+    <text x="288" y="93" font-size="17">Notification API</text>
+    <text x="288" y="132" font-size="14">Check access + input</text>
+    <text x="288" y="157" font-size="14">202 after commit</text>
+    <path d="M376 127H392" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="400" y="58" width="160" height="138" rx="8" fill="#dcfce7" stroke="#15803d"/>
+    <text x="480" y="93" font-size="17">Database</text>
+    <text x="480" y="126" font-size="14">Notification + outbox</text>
+    <text x="480" y="151" font-size="14">One transaction</text>
+    <path d="M568 127H584" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="592" y="58" width="160" height="138" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+    <text x="672" y="93" font-size="17">Outbox relay</text>
+    <text x="672" y="132" font-size="14">Publish saved IDs</text>
+    <text x="672" y="157" font-size="14">Retry unpublished work</text>
+    <path d="M760 127H776" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="784" y="58" width="160" height="138" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+    <text x="864" y="93" font-size="17">Durable queue</text>
+    <text x="864" y="132" font-size="14">At-least-once delivery</text>
+    <text x="864" y="157" font-size="14">Redelivery is possible</text>
+    <path d="M952 127H968" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="976" y="58" width="160" height="138" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+    <text x="1056" y="93" font-size="17">Worker</text>
+    <text x="1056" y="126" font-size="14">Check preferences</text>
+    <text x="1056" y="151" font-size="14">Save attempts + result</text>
+    <text x="1056" y="176" font-size="14">Reconcile unknowns</text>
+    <path d="M1144 127H1160" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="1168" y="58" width="160" height="138" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+    <text x="1248" y="93" font-size="17">Email provider</text>
+    <text x="1248" y="132" font-size="14">Accept submission</text>
+    <text x="1248" y="157" font-size="14">Report delivery facts</text>
+  </g>
+</svg>

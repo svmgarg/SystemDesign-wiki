@@ -1,0 +1,28 @@
+export const categories = [
+    { id: 'foundations', title: 'Foundations', description: 'Requirements, networking, storage, and operating reliable services.' },
+    { id: 'designs', title: 'System designs', description: 'Complete designs, architecture boards, and SQL examples.' },
+    { id: 'practice', title: 'Practice', description: 'Exercises and reference material for revision.' },
+];
+export const documentEntries = [
+    { id: 'introduction', file: 'index.md', title: 'Shopping-app walkthrough', category: 'foundations' },
+    { id: 'requirements', file: '01-thinking.md', title: 'Requirements', category: 'foundations' },
+    { id: 'networking', file: '02-requests.md', title: 'Networking & APIs', category: 'foundations' },
+    { id: 'storage', file: '03-storage.md', title: 'Storage', category: 'foundations' },
+    { id: 'cassandra', file: 'storage/cassandra.md', title: 'Apache Cassandra', category: 'foundations', parent: 'storage' },
+    { id: 'multipart-uploads', file: 'storage/multipart-uploads.md', title: 'Multipart Uploads: AWS & Azure', category: 'foundations', parent: 'storage' },
+    { id: 'scaling', file: '04-scaling.md', title: 'Scaling & Caching', category: 'foundations' },
+    { id: 'messaging', file: '05-async.md', title: 'Messaging', category: 'foundations' },
+    { id: 'reliability', file: '06-reliability.md', title: 'Reliability', category: 'foundations' },
+    { id: 'operations', file: '07-operations.md', title: 'Security & Operations', category: 'foundations' },
+    { id: 'url-shortener', file: 'designs/url-shortener/index.md', title: 'URL Shortener', category: 'designs' },
+    { id: 'ticket-booking', file: 'designs/ticket-booking/index.md', title: 'Ticket Booking', category: 'designs' },
+    { id: 'ecommerce', file: 'designs/ecommerce/index.md', title: 'E-commerce Checkout & Inventory', category: 'designs' },
+    { id: 'prime-video', file: 'designs/prime-video/index.md', title: 'Amazon Prime Video', category: 'designs' },
+    { id: 'uber', file: 'designs/uber/Uber-System-Design.md', title: 'Uber System Design', category: 'designs' },
+    { id: 'uber-matching', file: 'designs/uber/Uber-Driver-Matching.md', title: 'Uber Driver Matching', category: 'designs', parent: 'uber' },
+    { id: 'library', file: 'designs/library_reservation_system_design.md', title: 'Library Reservation', category: 'designs' },
+    { id: 'library-sql', file: 'designs/library_reservation_sql_queries.md', title: 'Library SQL queries', category: 'designs', parent: 'library' },
+    { id: 'notifications', file: 'designs/notification-service.md', title: 'Notification Service', category: 'designs' },
+    { id: 'distributed-cache', file: 'designs/distributed-cache.md', title: 'Distributed Cache', category: 'designs' },
+    { id: 'exercises', file: '10-practice.md', title: 'Exercises & Reference', category: 'practice' },
+];

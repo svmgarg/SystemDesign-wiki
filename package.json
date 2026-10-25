@@ -1,0 +1,30 @@
+{
+  "name": "system-design-wiki",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "predev": "node scripts/prepare-excalidraw-assets.js",
+    "dev": "vite --host 127.0.0.1 --port 8001 --strictPort",
+    "prebuild": "node scripts/prepare-excalidraw-assets.js",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 8001 --strictPort",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@excalidraw/excalidraw": "^0.18.1",
+    "dompurify": "^3.2.6",
+    "highlight.js": "^11.11.1",
+    "lucide-react": "^0.468.0",
+    "markdown-it": "^14.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.9.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.0.0",
+    "jsdom": "^26.1.0",
+    "vite": "^7.1.0",
+    "vitest": "^3.2.0"
+  }
+}

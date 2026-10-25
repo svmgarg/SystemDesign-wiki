@@ -1,5 +1,10 @@
 # Requirements
 
+!!! abstract "In this chapter"
+    Define scope, distinguish targets from correctness rules, and estimate the
+    work a service must handle. Start here after the
+    [introductory walkthrough](index.md#a-first-look-inside-a-shopping-app).
+
 Requirements describe what the service must do, what must remain correct, and
 how much work the service must handle. Define these requirements before choosing
 a database or drawing a system diagram. Each design choice should help the

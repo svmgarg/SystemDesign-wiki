@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="570" viewBox="0 0 1200 570" role="img" aria-labelledby="title desc">
+  <title id="title">E-commerce checkout and inventory reservations</title>
+  <desc id="desc">Checkout creates temporary Redis reservations and persists them before payment. PostgreSQL atomically confirms paid sales. Its transactional outbox updates Redis stock and removes the matching hold. TTL expiry removes unpaid holds without changing stock.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#475569"/></marker>
+  </defs>
+  <rect width="1200" height="570" rx="16" fill="#f8fafc"/>
+  <g font-family="Arial, sans-serif" fill="#0f172a">
+    <text x="40" y="42" font-size="24" font-weight="700">Reserve first; confirm stock in PostgreSQL after payment</text>
+    <g stroke="#94a3b8" stroke-width="2">
+      <rect x="40" y="105" width="170" height="100" rx="12" fill="#e0f2fe"/>
+      <rect x="280" y="105" width="230" height="100" rx="12" fill="#e0f2fe"/>
+      <rect x="590" y="90" width="260" height="135" rx="12" fill="#fef3c7"/>
+      <rect x="920" y="105" width="240" height="100" rx="12" fill="#e0f2fe"/>
+      <rect x="280" y="345" width="300" height="140" rx="12" fill="#dcfce7"/>
+      <rect x="680" y="355" width="260" height="115" rx="12" fill="#ede9fe"/>
+    </g>
+    <g text-anchor="middle" font-size="18">
+      <text x="125" y="150" font-weight="700">Web / Mobile</text>
+      <text x="125" y="178">Checkout request</text>
+      <text x="395" y="145" font-weight="700">Checkout Service</text>
+      <text x="395" y="175">Stable reservation ID</text>
+      <text x="720" y="125" font-weight="700">Redis</text>
+      <text x="720" y="155">Stock count per SKU</text>
+      <text x="720" y="182">User / quantity holds + TTL</text>
+      <text x="720" y="209">No reserved counter</text>
+      <text x="1040" y="145" font-weight="700">Payment Provider</text>
+      <text x="1040" y="175">Verified result</text>
+      <text x="430" y="378" font-weight="700">PostgreSQL: authority</text>
+      <text x="430" y="408">Durable reservation before payment</text>
+      <text x="430" y="436">Paid sale: guarded stock update</text>
+      <text x="430" y="464">Order + reservation + outbox</text>
+      <text x="810" y="391" font-weight="700">Outbox Worker</text>
+      <text x="810" y="421">Retry sale update safely</text>
+      <text x="810" y="449">Deduplicate committed events</text>
+    </g>
+    <g fill="none" stroke="#475569" stroke-width="2.5" marker-end="url(#arrow)">
+      <path d="M210 155 H280"/>
+      <path d="M510 155 H590"/>
+      <path d="M395 205 V345"/>
+      <path d="M510 115 V65 H1040 V105"/>
+      <path d="M580 412 H680"/>
+      <path d="M810 355 V225"/>
+    </g>
+    <g font-size="15">
+      <text x="523" y="143">Hold</text>
+      <text x="410" y="275">Persist, then confirm after payment</text>
+      <text x="855" y="285">Atomic Redis update:</text>
+      <text x="855" y="310">stock -= quantity; remove hold</text>
+      <text x="40" y="530" font-size="18" font-weight="700">Effective available = stock count - sum of live reservation quantities</text>
+      <text x="40" y="555">TTL removes holds without changing stock. PostgreSQL guards every final sale, even when Redis is stale.</text>
+    </g>
+  </g>
+</svg>

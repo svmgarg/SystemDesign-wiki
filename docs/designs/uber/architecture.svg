@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="240" viewBox="0 0 1240 240" role="img" aria-labelledby="title desc">
+  <title id="title">Ride-hailing architecture</title>
+  <desc id="desc">Rider and driver apps connect through a load balancer to REST services and WebSocket gateways. Ride, matching, and location services use Redis for live state and a primary database for durable records.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse">
+      <path d="M0 0 L8 4 L0 8 Z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="1240" height="240" rx="12" fill="#f8fafc"/>
+  <g fill="#ffffff" stroke="#64748b" stroke-width="2">
+    <rect x="20" y="75" width="180" height="90" rx="8"/>
+    <rect x="250" y="75" width="180" height="90" rx="8"/>
+    <rect x="480" y="75" width="200" height="90" rx="8"/>
+    <rect x="730" y="75" width="220" height="90" rx="8"/>
+    <rect x="1010" y="20" width="210" height="80" rx="8"/>
+    <rect x="1010" y="140" width="210" height="80" rx="8"/>
+  </g>
+  <g fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)">
+    <path d="M200 120 H250"/>
+    <path d="M430 120 H480"/>
+    <path d="M680 120 H730"/>
+    <path d="M950 105 H980 V60 H1010"/>
+    <path d="M950 135 H980 V180 H1010"/>
+  </g>
+  <g font-family="Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle">
+    <text x="110" y="112">Rider / Driver</text>
+    <text x="110" y="138">Apps</text>
+    <text x="340" y="112">Load Balancer</text>
+    <text x="340" y="138">API Gateway</text>
+    <text x="580" y="112">REST Services</text>
+    <text x="580" y="138">WebSocket Gateways</text>
+    <text x="840" y="103">Ride / Matching</text>
+    <text x="840" y="127">Location Ingestion</text>
+    <text x="840" y="151">Offer Delivery</text>
+    <text x="1115" y="52">Redis</text>
+    <text x="1115" y="78">Locations / Leases</text>
+    <text x="1115" y="172">Primary Database</text>
+    <text x="1115" y="198">Rides / Assignments</text>
+  </g>
+</svg>

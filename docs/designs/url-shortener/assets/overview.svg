@@ -1,22 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="360" height="330" viewBox="0 0 360 330" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="310" viewBox="0 0 720 310" role="img" aria-labelledby="title desc">
   <title id="title">URL shortener basic architecture</title>
-  <desc id="desc">A user's browser exchanges HTTP requests and responses with the URL shortener application. The application saves and looks up mappings in the database.</desc>
+  <desc id="desc">The browser calls the URL shortener application. On creation, a local Snowflake generator with an exclusively allocated worker ID provides an integer that is encoded as Base62 and saved with its destination in the database. Redirects look up saved mappings without generating IDs.</desc>
   <defs>
     <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto-start-reverse"><path d="M0 0L8 4L0 8Z" fill="#475569"/></marker>
   </defs>
-  <rect width="360" height="330" rx="12" fill="#fff"/>
+  <rect width="720" height="310" rx="12" fill="#fff"/>
   <g font-family="Segoe UI,Arial,sans-serif" text-anchor="middle" fill="#0f172a">
-    <rect x="30" y="16" width="300" height="64" rx="8" fill="#f1f5f9" stroke="#64748b"/>
-    <text x="180" y="54" font-size="19">User's browser</text>
-    <path d="M180 88V123" stroke="#475569" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-    <rect x="35" y="94" width="290" height="22" fill="#fff"/>
-    <text x="180" y="110" font-size="16">HTTP requests and responses</text>
-    <rect x="30" y="132" width="300" height="64" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
-    <text x="180" y="170" font-size="19">URL shortener application</text>
-    <path d="M180 204V239" stroke="#475569" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-    <rect x="85" y="210" width="190" height="22" fill="#fff"/>
-    <text x="180" y="226" font-size="16">Save or find a mapping</text>
-    <rect x="30" y="248" width="300" height="64" rx="8" fill="#f1f5f9" stroke="#64748b"/>
-    <text x="180" y="286" font-size="19">Database</text>
+    <rect x="16" y="74" width="166" height="76" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+    <text x="99" y="106" font-size="19">User's</text>
+    <text x="99" y="130" font-size="19">browser</text>
+    <path d="M190 112H259" stroke="#475569" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <text x="224" y="58" font-size="15">HTTP requests</text>
+    <text x="224" y="178" font-size="15">Responses</text>
+    <rect x="267" y="74" width="200" height="76" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+    <text x="367" y="106" font-size="19">URL shortener</text>
+    <text x="367" y="130" font-size="19">application</text>
+    <path d="M475 112H544" stroke="#475569" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <text x="509" y="58" font-size="15">Save mappings</text>
+    <text x="509" y="178" font-size="15">Look up mappings</text>
+    <rect x="552" y="74" width="152" height="76" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+    <text x="628" y="119" font-size="19">Database</text>
+    <path d="M367 150V220" stroke="#475569" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <rect x="227" y="228" width="280" height="64" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+    <text x="367" y="253" font-size="17">Local Snowflake generator</text>
+    <text x="367" y="277" font-size="15">Unique ID -&gt; Base62 key</text>
+    <text x="514" y="212" font-size="14">Creation only</text>
   </g>
 </svg>

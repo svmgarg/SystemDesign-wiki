@@ -1,10 +1,49 @@
 # Design a Distributed Cache
 
+## Basic description
+
 A **distributed-cache service** stores temporary copies of data on several networked
 servers. The application reads these copies to reduce response time and database work.
 The cache holds product records that the application can load again from the database.
 The database remains the **source of truth**: it stores committed records and their
 versions. If every cache server loses its data, the database must still hold those records.
+
+## Functional requirements
+
+- **Read and store temporary values:** Provide `GET`, `SET`, and `DELETE`
+  operations for application keys, with an expiration on each cached copy.
+- **Handle cache misses:** Let the application read the authoritative database,
+  fill the cache, and return the database result.
+- **Invalidate after updates:** Commit changes in the database before deleting
+  the corresponding cached value.
+- **Route keys:** Use consistent hashing and a locally saved topology map to
+  send each request to its primary shard.
+- **Replicate changes:** Copy primary updates asynchronously to a replica in
+  another failure domain.
+- **Manage node changes:** Refresh ownership maps and coordinate replacement
+  primaries when nodes join, leave, or fail.
+- **Expire and evict entries:** Remove expired values and allow eviction to
+  reclaim memory; the database must retain the original records.
+
+## Non-functional requirements
+
+These figures are planning inputs; measurements must establish actual capacity.
+
+- **Low lookup overhead:** Give cache attempts 10 ms total within the example
+  100 ms application read deadline.
+- **Read-heavy capacity:** Plan for 20,000 reads per second, a 95% hit ratio,
+  and five million resident records averaging 512 bytes before overhead.
+- **Bounded fallback load:** Allow at most 2,000 database fallback reads per
+  second globally, plus a concurrency limit. Reject or degrade excess work.
+- **Explicit freshness:** Allow briefly stale product descriptions and choose
+  TTLs between 45 and 60 seconds. TTL alone is not a guarantee of maximum data age.
+- **Safe failure handling:** Coordinate promotions and fence outdated owners.
+  Cache loss must not corrupt the authoritative database or remove admission limits.
+- **Isolation and access:** Use tenant-scoped keys and check permissions before
+  returning values. Read checkout prices and authorization decisions from
+  authoritative systems instead of this cache.
+- **Operational visibility:** Monitor hit ratio, memory, evictions, timeouts,
+  replication behavior, fallback load, and lookup latency.
 
 ## Start with one cache
 
@@ -14,7 +53,11 @@ or expired, the cache returns a **miss**. The application then reads the databas
 saves a copy in the cache for future lookups, and returns the record.
 This process is called **cache-aside** because the application manages cache reads and fills.
 
-[![The application checks the cache, returns a usable hit, or reads the database on a miss and saves a copy.](../assets/cache-aside.svg)](../assets/cache-aside.svg)
+<div class="diagram-scroll" role="region" aria-label="Cache-aside flow; scroll horizontally on small screens" tabindex="0" markdown="1">
+
+[![From left to right: the application checks the cache, returns a usable hit, or follows the bounded database-read and cache-fill path.](../assets/cache-aside.svg)](../assets/cache-aside.svg)
+
+</div>
 
 [Open the cache-aside diagram at full size](../assets/cache-aside.svg).
 
@@ -56,18 +99,24 @@ These figures are design inputs. The team must measure whether the implementatio
 
 ## Read the supplied architecture
 
-[![The application cache client uses its local topology map to choose a primary node; that node asynchronously replicates changes to a replica.](../assets/cache-routing.svg)](../assets/cache-routing.svg)
+<div class="diagram-scroll" role="region" aria-label="Cache routing and replication; scroll horizontally on small screens" tabindex="0" markdown="1">
+
+[![From left to right: the application passes a key to its cache client, the client routes to the primary using its local map, and the primary asynchronously replicates changes.](../assets/cache-routing.svg)](../assets/cache-routing.svg)
+
+</div>
 
 This focused diagram shows request routing. The coordinator updates the client's
 map when ownership changes; it is not contacted for each normal read.
 
-??? info "Original complete architecture sketch"
-    [![Original distributed cache architecture showing applications, cache clients, coordinator, shards, and replicas.](../assets/distributed-cache.png)](../assets/distributed-cache.png)
+### Original Excalidraw board
 
-    [Open the original image at full size](../assets/distributed-cache.png).
-    [Download the editable Excalidraw source](../assets/DistributedCache.excalidraw).
+![Original distributed cache board](../assets/DistributedCache.excalidraw)
 
-The artwork and editable source are unchanged. Each cache server is a **node**.
+[Open the saved PNG export](../assets/distributed-cache.png).
+[Download the editable Excalidraw source](../assets/DistributedCache.excalidraw).
+
+The React preview renders the original file automatically; the PNG remains a
+saved export. The artwork and editable source are unchanged. Each cache server is a **node**.
 The cache client library, labelled CC, runs inside each application. It keeps a local
 **topology map** of node addresses, key ownership, and replica assignments so it can
 send requests without asking a coordinator on every read.

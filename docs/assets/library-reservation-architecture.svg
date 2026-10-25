@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="236" viewBox="0 0 1120 236" role="img" aria-labelledby="title desc">
+  <title id="title">Library reservation high-level architecture</title>
+  <desc id="desc">Clients send requests through an API gateway for authentication, rate limiting, and validation. Redis provides atomic admission using per-book, per-date availability counters. The reservation service handles idempotency, booking orchestration, and bounded concurrency. SQL is the source of truth and performs transactional capacity validation and booking persistence.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="1120" height="236" rx="12" fill="#fff"/>
+  <g font-family="Segoe UI,Arial,sans-serif" text-anchor="middle" fill="#0f172a">
+    <text x="560" y="30" font-size="20" font-weight="600">Library reservation architecture</text>
+    <rect x="16" y="64" width="188" height="148" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+    <text x="110" y="104" font-size="18" font-weight="600">Clients / APIs</text>
+    <text x="110" y="146" font-size="15">Request a book</text>
+    <text x="110" y="170" font-size="15">and date range</text>
+    <rect x="240" y="64" width="188" height="148" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+    <text x="334" y="104" font-size="18" font-weight="600">API Gateway</text>
+    <text x="334" y="138" font-size="15">Authentication</text>
+    <text x="334" y="162" font-size="15">Rate limiting</text>
+    <text x="334" y="186" font-size="15">Validation</text>
+    <rect x="464" y="64" width="188" height="148" rx="8" fill="#fef3c7" stroke="#a16207"/>
+    <text x="558" y="104" font-size="18" font-weight="600">Redis guard</text>
+    <text x="558" y="138" font-size="15">Per-book, per-date</text>
+    <text x="558" y="162" font-size="15">availability counters</text>
+    <text x="558" y="186" font-size="15">Atomic admission</text>
+    <rect x="688" y="64" width="188" height="148" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+    <text x="782" y="104" font-size="17" font-weight="600">Reservation Service</text>
+    <text x="782" y="138" font-size="15">Idempotency</text>
+    <text x="782" y="162" font-size="15">Booking orchestration</text>
+    <text x="782" y="186" font-size="15">Bounded concurrency</text>
+    <rect x="912" y="64" width="188" height="148" rx="8" fill="#dcfce7" stroke="#15803d"/>
+    <text x="1006" y="104" font-size="18" font-weight="600">SQL database</text>
+    <text x="1006" y="138" font-size="15">Source of truth</text>
+    <text x="1006" y="162" font-size="15">Transactional checks</text>
+    <text x="1006" y="186" font-size="15">Booking persistence</text>
+  </g>
+  <g fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)">
+    <path d="M212 138H232"/>
+    <path d="M436 138H456"/>
+    <path d="M660 138H680"/>
+    <path d="M884 138H904"/>
+  </g>
+</svg>

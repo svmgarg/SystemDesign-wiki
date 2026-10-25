@@ -7,3 +7,8 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .python/
+.node/
+node_modules/
+dist/
+*.tsbuildinfo
+docs/excalidraw-assets/

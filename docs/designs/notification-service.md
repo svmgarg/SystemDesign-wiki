@@ -1,13 +1,61 @@
 # Design a Notification Service
 
-## What are we building?
+## Basic description
 
 A **notification service** accepts notification requests and manages sending through an external email provider.
 The caller submits a recipient user ID, an approved template name, and values to insert into that template.
 
-```text
-Caller --> API --> Stored request --> Background worker --> Email provider
-```
+## Functional requirements
+
+- **Accept a notification:** Let an authorized caller request one transactional
+  email for a registered recipient using an approved template and values.
+- **Save before acknowledging:** Persist the notification and outbox together,
+  then return `202 Accepted` with a notification ID.
+- **Respect preferences:** Look up the verified recipient and current category
+  preferences before submission; record excluded requests as `suppressed`.
+- **Send asynchronously:** Publish saved work through a durable queue and let a
+  background worker submit eligible email to the provider.
+- **Handle retries:** Reuse the original request identity, retry eligible
+  failures within limits, and retain unresolved or exhausted work for review.
+- **Expose status:** Let an authorized caller read the saved notification status,
+  including provider acceptance, failure, suppression, or an uncertain outcome.
+- **Process provider feedback:** Authenticate delivery and bounce callbacks,
+  deduplicate repeated events, and match them to the stored provider message.
+
+## Non-functional requirements
+
+These are the existing example's targets, not measured production guarantees.
+
+- **Acceptance latency:** Target 95% of API acceptance responses in less than
+  200 ms, measured separately from background submission.
+- **Submission delay:** When healthy, target provider acknowledgment within
+  60 seconds for 99% of eligible accepted requests. Suppressed requests are
+  excluded from that denominator.
+- **Capacity:** Plan for one million eligible requests per day and peaks at
+  ten times the average. Respect provider quotas and account for retry traffic.
+- **Durability:** Preserve accepted work across crashes using the database,
+  transactional outbox, and durable queue.
+- **Duplicate handling:** Make local operations idempotent and tolerate queue
+  redelivery. Do not claim exactly-once email submission when the provider's
+  deduplication or outcome lookup cannot establish it.
+- **Tenant isolation and privacy:** Enforce tenant and caller permissions,
+  protect recipient data and credentials, and keep addresses and payloads out of logs.
+- **Bounded recovery:** Limit provider-call duration, concurrent attempts,
+  retry count, and request age so outages do not create unlimited work.
+- **Observable outcomes:** Measure outbox and queue age, submission delay,
+  retries, unknown results, and dead-letter work. Provider-reported delivery
+  does not prove inbox placement or reading.
+
+## What are we building?
+
+<div class="diagram-scroll" role="region" aria-label="Notification submission architecture; scroll horizontally on small screens" tabindex="0" markdown="1">
+
+[![From left to right: trusted caller, API, database and outbox, relay, durable queue, worker, and email provider.](../assets/notification-service.svg)](../assets/notification-service.svg)
+
+</div>
+
+This horizontal overview shows the submission path. Status reads and verified
+provider feedback use the database paths described in the detailed workflows.
 
 The service checks the request, saves it in its database so it survives a restart, and returns a notification ID.
 A **worker**, a background process, loads the saved request and checks whether the recipient may receive the email.

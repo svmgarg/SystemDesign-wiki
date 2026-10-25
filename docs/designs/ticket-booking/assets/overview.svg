@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="220" viewBox="0 0 960 220" role="img" aria-labelledby="title desc">
+  <title id="title">Ticket booking seat-hold architecture</title>
+  <desc id="desc">From left to right, a client sends a hold request through the gateway to the Booking Service. The service uses Redis as a provisional gate and always commits the actual hold in PostgreSQL before accepting it. Payment begins only after a durable hold.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#475569"/></marker>
+  </defs>
+  <rect width="960" height="220" rx="12" fill="#fff"/>
+  <g font-family="Segoe UI,Arial,sans-serif" text-anchor="middle" fill="#0f172a">
+    <text x="480" y="29" font-size="20" font-weight="600">Ticket booking: authoritative seat-hold path</text>
+    <rect x="16" y="54" width="200" height="140" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+    <text x="116" y="91" font-size="18">Client</text>
+    <text x="116" y="132" font-size="15">Select an event and seats</text>
+    <text x="116" y="157" font-size="15">Send a stable request ID</text>
+    <path d="M224 124H240" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="248" y="54" width="200" height="140" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+    <text x="348" y="91" font-size="18">API gateway</text>
+    <text x="348" y="132" font-size="15">Authenticate the customer</text>
+    <text x="348" y="157" font-size="15">Limit incoming work</text>
+    <path d="M456 124H472" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="480" y="54" width="208" height="140" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+    <text x="584" y="91" font-size="18">Booking Service</text>
+    <text x="584" y="132" font-size="15">Redis: provisional gate only</text>
+    <text x="584" y="157" font-size="15">Always write the SQL hold</text>
+    <path d="M696 124H712" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="720" y="54" width="224" height="140" rx="8" fill="#dcfce7" stroke="#15803d"/>
+    <text x="832" y="91" font-size="18">PostgreSQL</text>
+    <text x="832" y="120" font-size="15">Authoritative seat ownership</text>
+    <text x="832" y="145" font-size="15">Commit all selected seats</text>
+    <text x="832" y="170" font-size="15">or acquire none</text>
+  </g>
+</svg>

@@ -1,5 +1,13 @@
 # Storage
 
+For a distributed-database deep dive, see
+[Apache Cassandra](storage/cassandra.md). It covers partitioning, replica
+consistency, the write and read paths, compaction, and crash recovery.
+
+For large files stored outside the database, see
+[Multipart Uploads: AWS S3 and Azure](storage/multipart-uploads.md). It explains
+direct chunk uploads, signed URLs, block IDs, and explicit completion.
+
 <a id="the-situation"></a>
 ## What storage provides
 
