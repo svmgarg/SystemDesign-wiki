@@ -7,7 +7,7 @@ import { documents } from '../content';
 import { useWorkspace } from '../workspace';
 import { IconButton } from './ui';
 export function Brand({ onNavigate }) {
-    return <Link to="/" className="brand" onClick={onNavigate}><img src={site.logo} width="25" height="25" alt=""/><span>{site.name}</span></Link>;
+    return <Link to="/" className="brand" onClick={onNavigate}><img src={`${import.meta.env.BASE_URL}${site.logo.replace(/^\//, '')}`} width="25" height="25" alt=""/><span>{site.name}</span></Link>;
 }
 export function Header({ onSearch, onMenu, focused }) {
     const { theme, toggleTheme, sidebarCollapsed } = useWorkspace();

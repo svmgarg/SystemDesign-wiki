@@ -107,9 +107,11 @@ export function DocumentPage({ doc, variant = 'workspace' }) {
         if (!anchor || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || anchor.target || anchor.hasAttribute('download'))
             return;
         const url = new URL(anchor.href);
-        if (url.origin === window.location.origin && documentByRoute.has(url.pathname)) {
+        const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+        const pathname = url.pathname.startsWith(`${base}/`) ? url.pathname.slice(base.length) : url.pathname;
+        if (url.origin === window.location.origin && documentByRoute.has(pathname)) {
             event.preventDefault();
-            navigate(`${url.pathname}${url.search}${url.hash}`);
+            navigate(`${pathname}${url.search}${url.hash}`);
         }
     }
     return <div className={`document-layout variant-${variant}`}>

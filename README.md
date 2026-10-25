@@ -113,8 +113,17 @@ npm.cmd run build
 
 The production build goes into ignored `dist/`. After stopping the React
 development server, `npm.cmd run preview` serves that build on port 8001.
-A production host must serve `index.html` for application routes such as
-`/01-thinking/` (SPA fallback).
+The build creates static entry pages for application routes such as
+`/01-thinking/`, so direct links and refreshes work on GitHub Pages.
+
+### GitHub Pages
+
+The site is published at https://svmgarg.github.io/SystemDesign-wiki/.
+The workflow in `.github/workflows/pages.yml` runs tests, builds, and deploys
+on pushes to `main`, or when run manually from GitHub Actions. Repository
+Settings > Pages must use **GitHub Actions** as the build source.
+The workflow sets `PAGES_BASE_PATH` to the Pages subpath; local development
+continues to use `/`.
 
 ### Compare the three reading layouts
 

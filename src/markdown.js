@@ -14,12 +14,12 @@ import { documentByFile } from './content';
 for (const [name, language] of Object.entries({ bash, http, javascript, json, plaintext, python, sql, typescript, yaml })) {
     hljs.registerLanguage(name, language);
 }
-export function resolveContentUrl(value, sourceFile) {
+export function resolveContentUrl(value, sourceFile, baseUrl = import.meta.env.BASE_URL) {
     if (/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(value))
         return value;
     const url = new URL(value, `https://wiki.local/${sourceFile}`);
     const doc = documentByFile.get(decodeURIComponent(url.pathname.slice(1)));
-    return `${doc?.route ?? url.pathname}${url.search}${url.hash}`;
+    return `${baseUrl.replace(/\/$/, '')}${doc?.route ?? url.pathname}${url.search}${url.hash}`;
 }
 export function renderDocument(doc) {
     const parser = new MarkdownIt({ html: true, linkify: true });

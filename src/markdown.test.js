@@ -38,6 +38,13 @@ describe('Markdown reading components', () => {
         expect(resolveContentUrl('index.md#a-first-look-inside-a-shopping-app', '01-thinking.md')).toBe('/introduction/#a-first-look-inside-a-shopping-app');
         expect(resolveContentUrl('#api-and-data', 'designs/url-shortener/index.md')).toBe('/designs/url-shortener/#api-and-data');
     });
+    it('keeps article links, diagram sources and downloads under the Pages base path', () => {
+        const base = '/SystemDesign-wiki/';
+        expect(resolveContentUrl('../../04-scaling.md#caching', 'designs/url-shortener/index.md', base)).toBe('/SystemDesign-wiki/04-scaling/#caching');
+        expect(resolveContentUrl('../assets/DistributedCache.excalidraw', 'designs/distributed-cache.md', base)).toBe('/SystemDesign-wiki/assets/DistributedCache.excalidraw');
+        expect(resolveContentUrl('#api-and-data', 'designs/url-shortener/index.md', base)).toBe('/SystemDesign-wiki/designs/url-shortener/#api-and-data');
+        expect(resolveContentUrl('https://example.com/image.svg', 'index.md', base)).toBe('https://example.com/image.svg');
+    });
     it('keeps system designs consistent and horizontal diagrams source-relative', () => {
         const designs = documents.filter(doc => doc.category === 'designs' && !doc.parent);
         for (const doc of designs) {
