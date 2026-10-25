@@ -85,7 +85,7 @@ describe('Markdown reading components', () => {
         expect(rendered.html).not.toContain('href="javascript:');
     });
     it('creates read-only Excalidraw slots instead of broken image tags', () => {
-        for (const id of ['distributed-cache', 'ticket-booking', 'uber']) {
+        for (const id of ['distributed-cache', 'ticket-booking', 'uber', 'url-shortener']) {
             const element = document.createElement('div');
             element.innerHTML = renderDocument(documentById.get(id)).html;
             const slot = element.querySelector('[data-excalidraw-src]');

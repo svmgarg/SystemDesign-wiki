@@ -63,6 +63,15 @@ These are design targets and constraints, not measured production guarantees.
 
 ## Basic architecture
 
+### Original design board
+
+![URL Shortener original Excalidraw design](assets/URL_Shortener.excalidraw)
+
+The original board is preserved unchanged. Use Expand for a full-screen view,
+or download the source to edit it in Excalidraw.
+
+### Simplified architecture
+
 <div class="diagram-scroll" role="region" aria-label="Basic architecture diagram; scroll horizontally on small screens" tabindex="0" markdown="1">
 
 [![The browser calls the application, which generates Snowflake IDs, encodes them as Base62, and saves mappings in the database. Redirects look up the saved mapping.](assets/overview.svg)](assets/overview.svg)

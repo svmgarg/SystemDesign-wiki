@@ -8,6 +8,7 @@ describe('Read-only Excalidraw sources', () => {
         'docs/assets/DistributedCache.excalidraw',
         'docs/designs/ticket-booking/assets/TicketMaster.excalidraw',
         'docs/designs/uber/assets/Uber_Design.excalidraw',
+        'docs/designs/url-shortener/assets/URL_Shortener.excalidraw',
     ])('loads the original %s without mutating it', file => {
         const value = JSON.parse(readFileSync(file, 'utf8'));
         const original = JSON.stringify(value);
