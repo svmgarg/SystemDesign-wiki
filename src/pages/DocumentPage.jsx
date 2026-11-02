@@ -143,6 +143,5 @@ export function DocumentPage({ doc, variant = 'workspace' }) {
       </nav>
       <p className="local-note">Your reading position and bookmarks are saved on this browser.</p>
     </article>
-    {rendered.headings.length > 2 && <aside className="contents-rail"><Contents headings={rendered.headings} active={active}/></aside>}
   </div>;
 }
