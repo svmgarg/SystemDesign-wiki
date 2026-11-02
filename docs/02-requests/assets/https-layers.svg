@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="490" viewBox="0 0 840 490" role="img" aria-labelledby="title desc">
+  <title id="title">HTTP, TLS, and TCP have different jobs</title>
+  <desc id="desc">For HTTP/1.1 or HTTP/2 over HTTPS, outgoing HTTP data passes through TLS encryption, then TCP delivery, then the network. The server reverses these steps. HTTP/3 instead uses QUIC with TLS 1.3 over UDP.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#475569"/></marker>
+  </defs>
+  <rect width="840" height="490" rx="12" fill="#fff"/>
+  <g font-family="Segoe UI,Arial,sans-serif" text-anchor="middle" fill="#0f172a">
+    <text x="420" y="32" font-size="23" font-weight="600">HTTPS: two transport stacks</text>
+    <text x="420" y="58" font-size="15">Follow outgoing data from the application down to the network</text>
+    <text x="220" y="92" font-size="18" font-weight="600">HTTP/1.1 and HTTP/2</text>
+    <text x="620" y="92" font-size="18" font-weight="600">HTTP/3</text>
+    <rect x="40" y="110" width="360" height="65" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+    <rect x="440" y="110" width="360" height="65" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+    <text x="220" y="137" font-size="17" font-weight="600">HTTP messages or frames</text>
+    <text x="220" y="159" font-size="14">Methods, paths, headers, and body data</text>
+    <text x="620" y="137" font-size="17" font-weight="600">HTTP/3 frames on streams</text>
+    <text x="620" y="159" font-size="14">Same HTTP meaning; different framing</text>
+    <path d="M220 180V195M620 180V195" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="40" y="205" width="360" height="65" rx="8" fill="#dcfce7" stroke="#15803d"/>
+    <rect x="440" y="205" width="360" height="65" rx="8" fill="#ede9fe" stroke="#7c3aed"/>
+    <text x="220" y="232" font-size="17" font-weight="600">TLS: protect communication</text>
+    <text x="220" y="254" font-size="13">Encrypt, detect changes, authenticate the server</text>
+    <text x="620" y="232" font-size="17" font-weight="600">QUIC with integrated TLS 1.3</text>
+    <text x="620" y="254" font-size="13">Encryption and reliable delivery within streams</text>
+    <path d="M220 275V290M620 275V290" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="40" y="300" width="360" height="65" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+    <rect x="440" y="300" width="360" height="65" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+    <text x="220" y="327" font-size="17" font-weight="600">TCP: reliable, ordered bytes</text>
+    <text x="220" y="349" font-size="13">One ordered byte stream for the whole connection</text>
+    <text x="620" y="327" font-size="17" font-weight="600">UDP: datagrams</text>
+    <text x="620" y="349" font-size="13">QUIC adds reliability and congestion control</text>
+    <path d="M220 370V390M620 370V390" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="220" y="418" font-size="18">Network</text>
+    <text x="620" y="418" font-size="18">Network</text>
+    <text x="420" y="455" font-size="14">Connection reuse saves setup; it does not change these layers.</text>
+    <text x="420" y="478" font-size="14">The receiver reverses the stack before handling the HTTP message.</text>
+  </g>
+</svg>

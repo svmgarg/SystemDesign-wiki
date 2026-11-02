@@ -176,7 +176,7 @@ These terms connect the exercises to the chapters that explain their use.
 | Term | Meaning | Chapter |
 | --- | --- | --- |
 | p95 | About 95% of measured requests finish within this duration. State which requests and time period you measured. | [Requirements](01-thinking.md) |
-| Deadline | The time by which a request must finish, including time spent waiting for other services. | [Networking](02-requests.md) |
+| Deadline | The time by which a request must finish, including time spent waiting for other services. | [Networking](02-requests/index.md) |
 | Transaction | The database saves a group of changes together, or saves none of them. | [Storage](03-storage.md) |
 | Cache hit | The service finds a requested value in its cache. The copy may be out of date. | [Scaling](04-scaling.md) |
 | Idempotency | Retrying the same operation does not repeat its intended effect, such as creating a reservation. | [Messaging](05-async.md) |

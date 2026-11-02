@@ -1,5 +1,8 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { runInNewContext } from 'node:vm';
 import MarkdownIt from 'markdown-it';
 import { documentById, documents } from './content';
 import { renderDocument, resolveContentUrl } from './markdown';
@@ -45,6 +48,105 @@ describe('Markdown reading components', () => {
         expect(resolveContentUrl('#api-and-data', 'designs/url-shortener/index.md', base)).toBe('/SystemDesign-wiki/designs/url-shortener/#api-and-data');
         expect(resolveContentUrl('https://example.com/image.svg', 'index.md', base)).toBe('https://example.com/image.svg');
     });
+    it('keeps the canonical networking guide self-contained with the preferred HTTP sequences and packet-loss coverage', () => {
+        const networking = documentById.get('networking');
+        expect(networking.route).toBe('/02-requests/');
+        const element = document.createElement('div');
+        element.innerHTML = renderDocument(networking).html;
+        const images = [...element.querySelectorAll('img')];
+        expect(images.length).toBeGreaterThan(0);
+        for (const image of images) {
+            const source = image.getAttribute('src');
+            expect(source.startsWith(`${networking.route}assets/`)).toBe(true);
+            expect(existsSync(resolve('docs', source.slice(1)))).toBe(true);
+            expect(image.parentElement.getAttribute('href')).toBe(source);
+        }
+        for (const id of ['requirements', 'storage', 'messaging']) {
+            expect(element.querySelector(`a[href="${documentById.get(id).route}"]`)).not.toBeNull();
+        }
+        for (const id of ['introduction', 'requirements', 'exercises', 'multipart-uploads']) {
+            expect(renderDocument(documentById.get(id)).html).toContain(`href="${networking.route}"`);
+        }
+        expect(resolveContentUrl('assets/http-versions.svg', networking.file, '/SystemDesign-wiki/'))
+            .toBe('/SystemDesign-wiki/02-requests/assets/http-versions.svg');
+        for (const asset of ['http-lifecycle', 'http-1-0-lifecycle', 'http-2-lifecycle', 'http-3-lifecycle', 'http-versions', 'http-loss-comparison']) {
+            expect(element.querySelector(`img[src="${networking.route}assets/${asset}.svg"]`)).not.toBeNull();
+        }
+        expect(element.querySelector('h3[id="what-happens-if-a-packet-is-lost"]')).not.toBeNull();
+        expect(networking.source).toContain('Already delivered data is not taken back');
+        expect(networking.source).toContain('QPACK header dependencies');
+        for (const doc of documents) {
+            expect(doc.source).not.toContain('02-requests-realtime/index.md');
+        }
+    });
+    it('preserves inline protocols and links standalone children with valid anchors and page-local diagrams', () => {
+        const doc = documentById.get('networking');
+        const element = document.createElement('div');
+        element.innerHTML = renderDocument(doc).html;
+        for (const anchor of ['server-sent-events-sse', 'websocket']) {
+            expect(element.querySelector(`h2[id="${anchor}"]`)).not.toBeNull();
+            expect(element.querySelector(`a[href="${doc.route}#${anchor}"]`)).not.toBeNull();
+        }
+        for (const id of ['sse', 'websocket']) {
+            const child = documentById.get(id);
+            expect(element.querySelector(`a[href="${child.route}"]`)).not.toBeNull();
+            const childElement = document.createElement('div');
+            childElement.innerHTML = renderDocument(child).html;
+            expect(childElement.querySelector(`a[href="${doc.route}"]`)).not.toBeNull();
+            const sibling = documentById.get(id === 'sse' ? 'websocket' : 'sse');
+            expect(childElement.querySelector(`a[href="${sibling.route}"]`)).not.toBeNull();
+        }
+        for (const page of [doc, documentById.get('sse'), documentById.get('websocket')]) {
+            const pageElement = document.createElement('div');
+            pageElement.innerHTML = renderDocument(page).html;
+            const images = [...pageElement.querySelectorAll('img')];
+            expect(images.length).toBeGreaterThan(0);
+            for (const image of images) {
+                const source = image.getAttribute('src');
+                expect(source.startsWith(`${page.route}assets/`)).toBe(true);
+                expect(existsSync(resolve('docs', source.slice(1)))).toBe(true);
+                expect(image.parentElement.getAttribute('href')).toBe(source);
+            }
+            for (const link of pageElement.querySelectorAll('a[href^="/"]')) {
+                const url = new URL(link.getAttribute('href'), 'https://wiki.local');
+                if (url.pathname.endsWith('.svg')) continue;
+                const target = documents.find(item => item.route === url.pathname);
+                expect(target, `Missing page for ${link.getAttribute('href')} in ${page.file}`).toBeDefined();
+                if (url.hash) {
+                    expect(renderDocument(target).headings.some(heading => heading.id === url.hash.slice(1))).toBe(true);
+                }
+            }
+        }
+    });
+    it('keeps streaming examples open until their cleanup function is called', () => {
+        for (const [id, api, cleanup] of [
+            ['networking', 'EventSource', 'stopEvents'],
+            ['networking', 'WebSocket', 'disconnect'],
+            ['sse', 'EventSource', 'stopEvents'],
+            ['websocket', 'WebSocket', 'disconnect'],
+        ]) {
+            const instances = [];
+            class Channel {
+                static CLOSED = 2;
+                constructor() {
+                    this.readyState = 1;
+                    this.closed = false;
+                    instances.push(this);
+                }
+                addEventListener() {}
+                send() {}
+                close() { this.closed = true; }
+            }
+            const example = new MarkdownIt().parse(documentById.get(id).source, {})
+                .find(token => token.type === 'fence' && token.info === 'javascript' && token.content.includes(`new ${api}(`));
+            const context = { [api]: Channel, console: { log() {} } };
+            runInNewContext(example.content, context);
+            expect(instances).toHaveLength(1);
+            expect(instances[0].closed).toBe(false);
+            context[cleanup]();
+            expect(instances[0].closed).toBe(true);
+        }
+    });
     it('keeps system designs consistent and horizontal diagrams source-relative', () => {
         const designs = documents.filter(doc => doc.category === 'designs' && !doc.parent);
         for (const doc of designs) {
@@ -72,6 +174,18 @@ describe('Markdown reading components', () => {
                 expect(image.parentElement.getAttribute('href')).toBe(image.getAttribute('src'));
             }
         }
+    });
+    it('links the ad-click design from the learning index with a page-local downloadable diagram', () => {
+        const doc = documentById.get('ad-click-aggregator');
+        expect(renderDocument(documentById.get('introduction')).html).toContain(`href="${doc.route}"`);
+        const element = document.createElement('div');
+        element.innerHTML = renderDocument(doc).html;
+        const image = element.querySelector('.diagram-scroll a > img');
+        expect(image).not.toBeNull();
+        const source = image.getAttribute('src');
+        expect(source.startsWith(`${doc.route}assets/`)).toBe(true);
+        expect(existsSync(resolve('docs', source.slice(1)))).toBe(true);
+        expect(image.parentElement.getAttribute('href')).toBe(source);
     });
     it('links the separate Uber architecture and matching notes', () => {
         const overview = documentById.get('uber');

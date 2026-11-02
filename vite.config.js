@@ -2,7 +2,7 @@ import { copyFileSync, mkdirSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { categories, documentEntries } from './content.config';
+import { categories, documentEntries, documentRedirects } from './content.config';
 import { site } from './site.config';
 export default defineConfig({
     base: process.env.PAGES_BASE_PATH || '/',
@@ -28,6 +28,7 @@ export default defineConfig({
                     ...documentEntries.map(doc => doc.file === 'index.md'
                         ? 'introduction'
                         : doc.file.replace(/index\.md$/, '').replace(/\.md$/, '')),
+                    ...documentRedirects.map(redirect => redirect.from.replace(/^\/|\/$/g, '')),
                 ];
                 for (const route of routes) {
                     const destination = resolve(output, route);

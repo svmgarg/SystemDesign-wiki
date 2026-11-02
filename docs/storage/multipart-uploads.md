@@ -396,5 +396,5 @@ or assuming that every ETag is the file's MD5 hash.
 - [Azure Put Block API](https://learn.microsoft.com/en-us/rest/api/storageservices/put-block)
 - [Azure Put Block List API](https://learn.microsoft.com/en-us/rest/api/storageservices/put-block-list)
 
-Related concepts: [Networking & APIs](../02-requests.md) and
+Related concepts: [Networking & APIs](../02-requests/index.md) and
 [Storage](../03-storage.md).

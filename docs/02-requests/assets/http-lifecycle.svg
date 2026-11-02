@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="1010" viewBox="0 0 760 1010" role="img" aria-labelledby="title desc">
+  <title id="title">HTTP/1.1 request lifecycle over TCP</title>
+  <desc id="desc">Time flows downward between a browser on the left and a server on the right. The browser sends SYN, the server sends SYN-ACK, and the browser sends ACK to establish TCP once. The browser sends GET /users and receives the complete 200 OK response, then sends GET /orders and receives another response on the same connection without a new handshake. More requests can reuse this connection. If it is no longer needed, the browser sends FIN, the server sends ACK and then FIN, and the browser sends the final ACK. HTTPS adds TLS setup before the first request.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse"><path d="M0 0L8 4L0 8Z" fill="#334155"/></marker>
+  </defs>
+  <rect width="760" height="1010" rx="12" fill="#fff"/>
+  <g font-family="Segoe UI,Arial,sans-serif" fill="#0f172a">
+    <g text-anchor="middle">
+      <text x="380" y="34" font-size="23" font-weight="600">HTTP/1.1 lifecycle: one connection, multiple requests</text>
+      <text x="380" y="59" font-size="15">Plain HTTP; connection reuse; time flows downward</text>
+      <rect x="88" y="80" width="184" height="42" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+      <text x="180" y="107" font-size="18" font-weight="600">Client / browser</text>
+      <rect x="488" y="80" width="184" height="42" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+      <text x="580" y="107" font-size="18" font-weight="600">Server</text>
+    </g>
+    <rect x="60" y="142" width="640" height="190" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-dasharray="4 5"/>
+    <rect x="60" y="350" width="640" height="328" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-dasharray="4 5"/>
+    <rect x="60" y="698" width="640" height="224" rx="12" fill="#fef3c7" stroke="#b45309" stroke-dasharray="4 5"/>
+    <g stroke="#64748b" stroke-width="2" stroke-dasharray="6 6">
+      <path d="M180 124V930"/>
+      <path d="M580 124V930"/>
+    </g>
+    <g font-size="16" font-weight="600">
+      <text x="78" y="168">1. TCP three-way handshake</text>
+      <text x="78" y="376">2-3. Multiple exchanges on the SAME connection</text>
+      <text x="78" y="724">4. Optional TCP closure (client initiates here)</text>
+    </g>
+    <g stroke="#334155" stroke-width="2.5" marker-end="url(#arrow)">
+      <path d="M180 208H580"/>
+      <path d="M580 254H180"/>
+      <path d="M180 300H580"/>
+      <path d="M180 420H580"/>
+      <path d="M580 478H180"/>
+      <path d="M180 566H580"/>
+      <path d="M580 624H180"/>
+      <path d="M180 762H580"/>
+      <path d="M580 808H180"/>
+      <path d="M580 854H180"/>
+      <path d="M180 900H580"/>
+    </g>
+    <g text-anchor="middle" font-size="16">
+      <text x="380" y="199">SYN</text>
+      <text x="380" y="245">SYN-ACK</text>
+      <text x="380" y="291">ACK</text>
+      <text x="380" y="411" font-weight="600">GET /users</text>
+      <text x="380" y="469" font-weight="600">200 OK + complete user data</text>
+      <text x="380" y="520" font-size="15" font-weight="600">Reuse TCP: no new handshake</text>
+      <text x="380" y="557" font-weight="600">GET /orders</text>
+      <text x="380" y="615" font-weight="600">200 OK + complete order data</text>
+      <text x="380" y="658" font-size="14">More requests can follow; this flow is sequential, not multiplexed.</text>
+      <text x="380" y="753">FIN</text>
+      <text x="380" y="799">ACK</text>
+      <text x="380" y="845">FIN</text>
+      <text x="380" y="891">ACK</text>
+      <text x="380" y="952" font-size="14">Keep the connection open for more requests, or close when no longer needed.</text>
+      <text x="380" y="975" font-size="14">HTTPS over TCP: add TLS setup before the FIRST HTTP request.</text>
+      <text x="380" y="997" font-size="13" fill="#475569">Simplified: data ACKs and TIME-WAIT are not shown.</text>
+    </g>
+  </g>
+</svg>

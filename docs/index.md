@@ -14,7 +14,7 @@ Read in order or use these links for reference. The
 the components.
 
 1. [Requirements](01-thinking.md): scope, correctness rules, and estimates.
-2. [Networking & APIs](02-requests.md): requests, protocols, and API contracts.
+2. [Networking & APIs](02-requests/index.md): requests, protocols, and API contracts.
 3. [Storage](03-storage.md): data models, transactions, and concurrent updates.
 4. [Scaling & Caching](04-scaling.md): capacity, load balancing, and cached data.
 5. [Messaging](05-async.md): queues, workers, retries, and duplicate deliveries.
@@ -50,6 +50,8 @@ API examples, presigned part URLs, SAS authorization, retries, and finalization.
   accompany the design.
 - [Notification Service](designs/notification-service.md): background delivery,
   retries, and duplicate work.
+- [Ad Click Aggregator](designs/ad-click-aggregator/index.md): Kafka partitions,
+  Spark Streaming, per-minute click counts, and popular-ad hotspots.
 - [Distributed Cache](designs/distributed-cache.md): routing, replication,
   expiry, and failure handling.
 
@@ -87,7 +89,7 @@ Shopping app  <-- name, price, details --  Shop application
 The app and the application need an agreement about what the app can request
 and what the application will return. That agreement is an **API**.
 
-[Learn how requests reach a server and how APIs work](02-requests.md).
+[Learn how requests reach a server and how APIs work](02-requests/index.md).
 
 ## Where do products and orders live?
 

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="1100" viewBox="0 0 820 1100" role="img" aria-labelledby="title desc">
+  <title id="title">SSE: a long-lived response, reconnect, and conditional replay</title>
+  <desc id="desc">The browser sends GET /events. A 200 text/event-stream response carries events 41 and 42 and a heartbeat. After a recoverable interruption, the same EventSource sends a new GET with Last-Event-ID 42. A new 200 response replays retained event 43 and continues with live event 44. Calling EventSource.close cancels the subscription and stops retries. Replay requires server history; the cursor does not acknowledge application processing.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse"><path d="M0 0L8 4L0 8Z" fill="#334155"/></marker>
+  </defs>
+  <rect width="820" height="1100" rx="12" fill="#fff"/>
+  <g font-family="Segoe UI,Arial,sans-serif" fill="#0f172a">
+    <g text-anchor="middle">
+      <text x="410" y="34" font-size="24" font-weight="600">SSE: one response carries many events</text>
+      <text x="410" y="61" font-size="15">HTTP transport already available; time flows downward</text>
+      <rect x="68" y="80" width="184" height="42" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+      <text x="160" y="107" font-size="18" font-weight="600">Browser / client</text>
+      <rect x="508" y="80" width="184" height="42" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+      <text x="600" y="107" font-size="18" font-weight="600">Server</text>
+    </g>
+    <rect x="40" y="142" width="740" height="360" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-dasharray="4 5"/>
+    <rect x="40" y="576" width="740" height="278" rx="12" fill="#fef3c7" stroke="#b45309" stroke-dasharray="4 5"/>
+    <rect x="40" y="872" width="740" height="90" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-dasharray="4 5"/>
+    <g stroke="#94a3b8" stroke-width="2" stroke-dasharray="5 5">
+      <path d="M160 124V970M600 124V970"/>
+    </g>
+    <g font-size="16" font-weight="600">
+      <text x="58" y="168">1. Open a long-lived HTTP response</text>
+      <text x="58" y="602">2. Reconnect and request replay after the remembered cursor</text>
+      <text x="58" y="898">3. Explicitly stop the subscription</text>
+    </g>
+    <g stroke-width="2.5" marker-end="url(#arrow)">
+      <path d="M160 202H600M160 650H600" stroke="#0284c7"/>
+      <path d="M600 252H160M600 314H160M600 370H160M600 696H160M600 742H160M600 794H160" stroke="#15803d"/>
+      <path d="M600 426H160" stroke="#64748b" stroke-dasharray="5 4"/>
+      <path d="M160 934H600" stroke="#64748b"/>
+    </g>
+    <path d="M80 532H740" stroke="#dc2626" stroke-width="2" stroke-dasharray="6 5"/>
+    <g text-anchor="middle" font-size="15">
+      <text x="380" y="193">GET /events; Accept: text/event-stream</text>
+      <text x="380" y="243">200 OK; Content-Type: text/event-stream</text>
+      <text x="380" y="305" fill="#166534" font-weight="600">id: 41; event: order_update; data: ...</text>
+      <text x="380" y="361" fill="#166534" font-weight="600">id: 42; event: order_update; data: ...</text>
+      <text x="380" y="417">: heartbeat (comment, not a message event)</text>
+      <text x="410" y="468" font-size="14">Same HTTP response body; events are separated by blank lines.</text>
+      <text x="410" y="521" fill="#b91c1c" font-weight="600">Recoverable interruption</text>
+      <text x="410" y="557" font-size="14">EventSource remembers 42 and waits before retrying.</text>
+      <text x="380" y="641">New GET /events; Last-Event-ID: 42</text>
+      <text x="380" y="687">New 200 OK event-stream response</text>
+      <text x="380" y="733" fill="#166534" font-weight="600">id: 43; replay retained event</text>
+      <text x="380" y="785" fill="#166534" font-weight="600">id: 44; continue with live events</text>
+      <text x="410" y="835" font-size="14">Server history and a gap-free replay/live handoff are required.</text>
+      <text x="380" y="925">events.close(): cancel the fetch; stop automatic retries</text>
+      <text x="410" y="1000" font-size="15" font-weight="600">Automatic reconnect is not automatic durable delivery.</text>
+      <text x="410" y="1026" font-size="14">Last-Event-ID is a cursor, not an acknowledgment of business processing.</text>
+      <text x="410" y="1052" font-size="14">A new EventSource after page reload starts without the old remembered cursor.</text>
+      <text x="410" y="1078" font-size="13" fill="#475569">HTTP/2 and HTTP/3 can share the transport connection with other streams.</text>
+    </g>
+  </g>
+</svg>

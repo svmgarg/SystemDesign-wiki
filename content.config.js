@@ -6,7 +6,9 @@ export const categories = [
 export const documentEntries = [
     { id: 'introduction', file: 'index.md', title: 'Shopping-app walkthrough', category: 'foundations' },
     { id: 'requirements', file: '01-thinking.md', title: 'Requirements', category: 'foundations' },
-    { id: 'networking', file: '02-requests.md', title: 'Networking & APIs', category: 'foundations' },
+    { id: 'networking', file: '02-requests/index.md', title: 'Networking & APIs', category: 'foundations' },
+    { id: 'sse', file: '02-requests-realtime/sse/index.md', title: 'Server-Sent Events (SSE)', category: 'foundations', parent: 'networking' },
+    { id: 'websocket', file: '02-requests-realtime/websocket/index.md', title: 'WebSocket', category: 'foundations', parent: 'networking' },
     { id: 'storage', file: '03-storage.md', title: 'Storage', category: 'foundations' },
     { id: 'cassandra', file: 'storage/cassandra.md', title: 'Apache Cassandra', category: 'foundations', parent: 'storage' },
     { id: 'multipart-uploads', file: 'storage/multipart-uploads.md', title: 'Multipart Uploads: AWS & Azure', category: 'foundations', parent: 'storage' },
@@ -23,6 +25,11 @@ export const documentEntries = [
     { id: 'library', file: 'designs/library_reservation_system_design.md', title: 'Library Reservation', category: 'designs' },
     { id: 'library-sql', file: 'designs/library_reservation_sql_queries.md', title: 'Library SQL queries', category: 'designs', parent: 'library' },
     { id: 'notifications', file: 'designs/notification-service.md', title: 'Notification Service', category: 'designs' },
+    { id: 'ad-click-aggregator', file: 'designs/ad-click-aggregator/index.md', title: 'Ad Click Aggregator', category: 'designs' },
     { id: 'distributed-cache', file: 'designs/distributed-cache.md', title: 'Distributed Cache', category: 'designs' },
     { id: 'exercises', file: '10-practice.md', title: 'Exercises & Reference', category: 'practice' },
+];
+export const documentRedirects = [
+    { from: '/02-requests-realtime/', to: '/02-requests/' },
+    { from: '/02-requests-alternate/', to: '/02-requests/' },
 ];

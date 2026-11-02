@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="760" viewBox="0 0 760 760" role="img" aria-labelledby="title desc">
+  <title id="title">HTTP/1.1: reuse one TCP connection for sequential requests</title>
+  <desc id="desc">One SYN, SYN-ACK, ACK handshake establishes TCP. The browser requests users and receives the complete response, then requests orders on the same connection. TCP closure is optional after the exchanges. HTTPS would add TLS setup before the first request.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse"><path d="M0 0L8 4L0 8Z" fill="#334155"/></marker>
+  </defs>
+  <rect width="760" height="760" rx="12" fill="#fff"/>
+  <g font-family="Segoe UI,Arial,sans-serif" fill="#0f172a">
+    <g text-anchor="middle">
+      <text x="380" y="34" font-size="23" font-weight="600">HTTP/1.1: reuse the connection</text>
+      <text x="380" y="59" font-size="15">Plain HTTP; common non-pipelined flow; time flows down</text>
+      <rect x="88" y="80" width="184" height="42" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+      <text x="180" y="107" font-size="18" font-weight="600">Client / browser</text>
+      <rect x="488" y="80" width="184" height="42" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+      <text x="580" y="107" font-size="18" font-weight="600">Server</text>
+    </g>
+    <rect x="60" y="142" width="640" height="164" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-dasharray="4 5"/>
+    <rect x="60" y="324" width="640" height="276" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-dasharray="4 5"/>
+    <rect x="60" y="620" width="640" height="74" rx="12" fill="#fef3c7" stroke="#b45309" stroke-dasharray="4 5"/>
+    <g stroke="#64748b" stroke-width="2" stroke-dasharray="6 6">
+      <path d="M180 124V700M580 124V700"/>
+    </g>
+    <g font-size="16" font-weight="600">
+      <text x="78" y="168">1. Establish TCP once</text>
+      <text x="78" y="350">2. Two exchanges on the SAME connection</text>
+    </g>
+    <g stroke="#334155" stroke-width="2.5" marker-end="url(#arrow)">
+      <path d="M180 202H580M580 248H180M180 294H580"/>
+      <path d="M180 392H580M580 448H180M180 524H580M580 580H180"/>
+    </g>
+    <path d="M180 676H580" stroke="#334155" stroke-width="2.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <g text-anchor="middle" font-size="16">
+      <text x="380" y="193">SYN</text>
+      <text x="380" y="239">SYN-ACK</text>
+      <text x="380" y="285">ACK</text>
+      <text x="380" y="383">GET /users HTTP/1.1</text>
+      <text x="380" y="439">200 OK + complete user data</text>
+      <text x="380" y="486" font-size="14" font-weight="600">No new TCP handshake</text>
+      <text x="380" y="515">GET /orders HTTP/1.1</text>
+      <text x="380" y="571">200 OK + complete order data</text>
+      <text x="380" y="650">3. Optional close: FIN / ACK exchanges</text>
+      <text x="380" y="724" font-size="14">Persistent by default; another request can reuse this connection.</text>
+      <text x="380" y="747" font-size="13" fill="#475569">HTTPS adds TLS after TCP setup. Data ACKs and TIME-WAIT are omitted.</text>
+    </g>
+  </g>
+</svg>

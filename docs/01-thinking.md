@@ -226,4 +226,4 @@ that the service may return from an old copy. State how old that copy may be.
     Even with low average traffic, the service may receive a burst of requests,
     many requests for one item, or slow responses from another service.
 
-[Next: Networking & APIs →](02-requests.md)
+[Next: Networking & APIs →](02-requests/index.md)

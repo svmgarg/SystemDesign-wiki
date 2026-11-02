@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
 import { site } from '../site.config';
-import { documentById, documentByRoute, documents } from './content';
+import { documentById, documentByRoute, documentRedirects, documents, resolveDocumentRedirect } from './content';
 import { Header, NavigationDrawer, Sidebar } from './components/Navigation';
 import { SearchDialog } from './components/SearchDialog';
 import { DocumentPage } from './pages/DocumentPage';
@@ -68,6 +68,8 @@ export function App() {
         <Route path="/topics/:categoryId/" element={<LibraryPage view="category"/>}/>
         <Route path="/concepts/" element={<DocumentPage doc={requirements} variant={variant}/>}/>
         {documents.map(doc => <Route key={doc.id} path={doc.route} element={<DocumentPage key={doc.id} doc={doc}/>}/>)}
+        {documentRedirects.map(redirect => <Route key={redirect.from} path={redirect.from}
+          element={<Navigate replace to={resolveDocumentRedirect(redirect.from, location.search, location.hash)}/>}/>)}
         <Route path="*" element={<NotFound />}/>
       </Routes>
     </main>

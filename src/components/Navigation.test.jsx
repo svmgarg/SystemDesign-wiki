@@ -97,6 +97,25 @@ describe('Documentation sidebar', () => {
         expect(onNavigate).toHaveBeenCalledOnce();
         expect(container.querySelector('a[aria-current="page"]').textContent).toBe('Apache Cassandra');
     });
+    it('nests restored realtime children and opens their complete ancestry on direct navigation', async () => {
+        seedWorkspace({ collapsedGroups: ['foundations', 'document:networking'] });
+        await renderSidebar('/02-requests-realtime/sse/');
+        expect(container.querySelectorAll('a[href="/02-requests/"]')).toHaveLength(1);
+        expect(container.querySelector('a[href="/02-requests-realtime/"]')).toBeNull();
+        expect(button('Collapse Networking & Realtime APIs')).toBeUndefined();
+        expect(container.querySelector('a[aria-current="page"]').textContent).toBe('Server-Sent Events (SSE)');
+        expect(button('Foundations').getAttribute('aria-expanded')).toBe('true');
+        const toggle = button('Collapse Networking & APIs');
+        expect(toggle.getAttribute('aria-expanded')).toBe('true');
+        const children = container.querySelector(`[id="${toggle.getAttribute('aria-controls')}"]`);
+        expect([...children.querySelectorAll('a')].map(link => link.getAttribute('href'))).toEqual([
+            '/02-requests-realtime/sse/', '/02-requests-realtime/websocket/',
+        ]);
+        await click(children.querySelector('a[href="/02-requests-realtime/websocket/"]'));
+        expect(container.querySelector('a[aria-current="page"]').textContent).toBe('WebSocket');
+        expect(container.querySelector('a[href="/02-requests-alternate/"]')).toBeNull();
+        expect(container.querySelector('a[href="/02-requests/"]')).not.toBeNull();
+    });
 
     it('defaults new workspaces to dark while preserving an existing light preference', async () => {
         await renderSidebar();

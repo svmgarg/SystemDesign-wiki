@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="1184" viewBox="0 0 760 1184" role="img" aria-labelledby="title desc">
+  <title id="title">HTTP/2: multiplex streams on one secure TCP connection</title>
+  <desc id="desc">After TCP, TLS, and HTTP/2 setup, the browser sends product, reviews, and delivery requests on streams 1, 3, and 5 before receiving response data. The server interleaves DATA frames: product chunk 1, reviews chunk 1, delivery chunk 1, then chunk 2 of each response with END_STREAM. Stream IDs identify the responses, and chunk order is preserved within each stream. This is an example, not a requirement to receive all requests before responding. The connection can be reused or closed afterward.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse"><path d="M0 0L8 4L0 8Z" fill="#334155"/></marker>
+  </defs>
+  <rect width="760" height="1184" rx="12" fill="#fff"/>
+  <g font-family="Segoe UI,Arial,sans-serif" fill="#0f172a">
+    <g text-anchor="middle">
+      <text x="380" y="34" font-size="23" font-weight="600">HTTP/2: concurrent streams over TCP</text>
+      <text x="380" y="59" font-size="15">Fresh HTTPS connection; time flows down</text>
+      <rect x="88" y="80" width="184" height="42" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+      <text x="180" y="107" font-size="18" font-weight="600">Client / browser</text>
+      <rect x="488" y="80" width="184" height="42" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+      <text x="580" y="107" font-size="18" font-weight="600">Server</text>
+    </g>
+    <rect x="60" y="142" width="640" height="164" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-dasharray="4 5"/>
+    <rect x="60" y="320" width="640" height="122" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-dasharray="4 5"/>
+    <rect x="60" y="460" width="640" height="180" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-dasharray="4 5"/>
+    <rect x="60" y="658" width="640" height="360" rx="12" fill="#f0f9ff" stroke="#0284c7" stroke-dasharray="4 5"/>
+    <rect x="60" y="1038" width="640" height="74" rx="12" fill="#fef3c7" stroke="#b45309" stroke-dasharray="4 5"/>
+    <g stroke="#64748b" stroke-width="2" stroke-dasharray="6 6">
+      <path d="M180 124V1122M580 124V1122"/>
+    </g>
+    <g font-size="16" font-weight="600">
+      <text x="78" y="168">1. Establish TCP once</text>
+      <text x="78" y="346">2. TLS and HTTP/2 setup (summarized)</text>
+      <text x="78" y="486">3. Server receives three requests on separate streams</text>
+      <text x="78" y="684">4. Server sends interleaved response chunks</text>
+    </g>
+    <g stroke="#334155" stroke-width="2.5" marker-end="url(#arrow)">
+      <path d="M180 202H580M580 248H180M180 294H580"/>
+    </g>
+    <g stroke-width="2.5" marker-end="url(#arrow)">
+      <path d="M180 528H580M580 728H180M580 866H180" stroke="#0284c7"/>
+      <path d="M180 574H580M580 774H180M580 912H180" stroke="#15803d"/>
+      <path d="M180 620H580M580 820H180M580 958H180" stroke="#a16207"/>
+    </g>
+    <g stroke="#334155" stroke-width="2.5" marker-start="url(#arrow)" marker-end="url(#arrow)">
+      <path d="M180 386H580M180 430H580M180 1094H580"/>
+    </g>
+    <g text-anchor="middle" font-size="15">
+      <text x="380" y="193">SYN</text>
+      <text x="380" y="239">SYN-ACK</text>
+      <text x="380" y="285">ACK</text>
+      <text x="380" y="377">TLS handshake; ALPN selects h2</text>
+      <text x="380" y="421">HTTP/2 preface and SETTINGS exchange</text>
+      <text x="380" y="519" fill="#075985">Stream 1: GET /products/p123</text>
+      <text x="380" y="565" fill="#166534">Stream 3: GET /reviews</text>
+      <text x="380" y="611" fill="#854d0e">Stream 5: GET /delivery</text>
+      <text x="380" y="719" fill="#075985" font-weight="600">Stream 1: DATA, product chunk 1</text>
+      <text x="380" y="765" fill="#166534" font-weight="600">Stream 3: DATA, reviews chunk 1</text>
+      <text x="380" y="811" fill="#854d0e" font-weight="600">Stream 5: DATA, delivery chunk 1</text>
+      <text x="380" y="857" fill="#075985" font-weight="600">Stream 1: DATA, product chunk 2, END_STREAM</text>
+      <text x="380" y="903" fill="#166534" font-weight="600">Stream 3: DATA, reviews chunk 2, END_STREAM</text>
+      <text x="380" y="949" fill="#854d0e" font-weight="600">Stream 5: DATA, delivery chunk 2, END_STREAM</text>
+      <text x="380" y="993" font-size="14">Chunks CAN interleave; order within each stream is preserved.</text>
+      <text x="380" y="1069">5. Reuse, or gracefully shut down and close</text>
+      <text x="380" y="1139" font-size="13">Requests use HEADERS; response HEADERS (:status 200) are omitted.</text>
+      <text x="380" y="1160" font-size="13">Example order: the server need not wait for all requests. TCP loss can stall all streams.</text>
+      <text x="380" y="1178" font-size="13" fill="#475569">Setup summarized; graceful close may use GOAWAY, TLS close_notify, then FIN/ACK.</text>
+    </g>
+  </g>
+</svg>

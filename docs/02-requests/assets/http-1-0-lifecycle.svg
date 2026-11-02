@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="940" viewBox="0 0 760 940" role="img" aria-labelledby="title desc">
+  <title id="title">HTTP/1.0: a new TCP connection for each request by default</title>
+  <desc id="desc">The browser and server exchange SYN, SYN-ACK, and ACK. The browser requests users, the server responds, and TCP closes. A second TCP handshake precedes the orders request and response, followed by another closure. Optional HTTP/1.0 keep-alive is not shown.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse"><path d="M0 0L8 4L0 8Z" fill="#334155"/></marker>
+  </defs>
+  <rect width="760" height="940" rx="12" fill="#fff"/>
+  <g font-family="Segoe UI,Arial,sans-serif" fill="#0f172a">
+    <g text-anchor="middle">
+      <text x="380" y="34" font-size="23" font-weight="600">HTTP/1.0: connect for each request</text>
+      <text x="380" y="59" font-size="15">Plain HTTP; default non-persistent behavior; time flows down</text>
+      <rect x="88" y="80" width="184" height="42" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+      <text x="180" y="107" font-size="18" font-weight="600">Client / browser</text>
+      <rect x="488" y="80" width="184" height="42" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+      <text x="580" y="107" font-size="18" font-weight="600">Server</text>
+    </g>
+    <rect x="60" y="142" width="640" height="164" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-dasharray="4 5"/>
+    <rect x="60" y="320" width="640" height="116" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-dasharray="4 5"/>
+    <rect x="60" y="450" width="640" height="68" rx="12" fill="#fef3c7" stroke="#b45309" stroke-dasharray="4 5"/>
+    <rect x="60" y="538" width="640" height="164" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-dasharray="4 5"/>
+    <rect x="60" y="716" width="640" height="116" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-dasharray="4 5"/>
+    <rect x="60" y="846" width="640" height="68" rx="12" fill="#fef3c7" stroke="#b45309" stroke-dasharray="4 5"/>
+    <g stroke="#64748b" stroke-width="2" stroke-dasharray="6 6">
+      <path d="M180 124V518M580 124V518M180 538V914M580 538V914"/>
+    </g>
+    <g font-size="16" font-weight="600">
+      <text x="78" y="168">1. Establish TCP connection A</text>
+      <text x="78" y="346">2. Request and response</text>
+      <text x="78" y="564">4. Establish a NEW TCP connection B</text>
+      <text x="78" y="742">5. Another request and response</text>
+    </g>
+    <g stroke="#334155" stroke-width="2.5" marker-end="url(#arrow)">
+      <path d="M180 202H580M580 248H180M180 294H580"/>
+      <path d="M180 382H580M580 424H180"/>
+      <path d="M180 598H580M580 644H180M180 690H580"/>
+      <path d="M180 778H580M580 820H180"/>
+    </g>
+    <g stroke="#334155" stroke-width="2.5" marker-start="url(#arrow)" marker-end="url(#arrow)">
+      <path d="M180 500H580M180 896H580"/>
+    </g>
+    <g text-anchor="middle" font-size="16">
+      <text x="380" y="193">SYN</text>
+      <text x="380" y="239">SYN-ACK</text>
+      <text x="380" y="285">ACK</text>
+      <text x="380" y="373">GET /users HTTP/1.0</text>
+      <text x="380" y="415">200 OK + user data</text>
+      <text x="380" y="481">3. Close A: FIN / ACK exchanges</text>
+      <text x="380" y="589">SYN</text>
+      <text x="380" y="635">SYN-ACK</text>
+      <text x="380" y="681">ACK</text>
+      <text x="380" y="769">GET /orders HTTP/1.0</text>
+      <text x="380" y="811">200 OK + order data</text>
+      <text x="380" y="877">6. Close B: FIN / ACK exchanges</text>
+      <text x="380" y="933" font-size="13" fill="#475569">Closure arrows summarize several segments. Optional keep-alive is not shown.</text>
+    </g>
+  </g>
+</svg>

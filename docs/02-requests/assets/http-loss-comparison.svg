@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="744" viewBox="0 0 960 744" role="img" aria-labelledby="title desc">
+  <title id="title">Packet arrival is not the same as application delivery</title>
+  <desc id="desc">Two established connections are compared with time flowing down. Product chunk 2 is lost in each. For HTTP/2 over TCP, later reviews and delivery bytes reach TCP but cannot reach HTTP/2 until retransmission fills the gap. For HTTP/3 over QUIC, received reviews and delivery data can reach HTTP/3 before product chunk 2 is recovered. Headers are already decoded, and each illustrated packet carries data from only one stream.</desc>
+  <defs>
+    <marker id="blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#0284c7"/></marker>
+    <marker id="green" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#15803d"/></marker>
+    <marker id="amber" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#a16207"/></marker>
+  </defs>
+  <rect width="960" height="744" rx="12" fill="#fff"/>
+  <g font-family="Segoe UI,Arial,sans-serif" fill="#0f172a">
+    <g text-anchor="middle">
+      <text x="480" y="32" font-size="23" font-weight="600">One lost packet: what can the application receive?</text>
+      <text x="480" y="58" font-size="15">Connections established; responses already started; time flows down</text>
+    </g>
+    <rect x="16" y="80" width="448" height="540" rx="12" fill="#f8fafc" stroke="#94a3b8"/>
+    <rect x="496" y="80" width="448" height="540" rx="12" fill="#f8fafc" stroke="#94a3b8"/>
+    <rect x="70" y="292" width="360" height="130" rx="8" fill="#fef3c7"/>
+    <rect x="550" y="292" width="360" height="130" rx="8" fill="#dcfce7"/>
+    <g text-anchor="middle">
+      <text x="240" y="108" font-size="19" font-weight="600">HTTP/2 over TCP</text>
+      <text x="720" y="108" font-size="19" font-weight="600">HTTP/3 over QUIC</text>
+      <text x="90" y="137" font-size="15">Client</text>
+      <text x="410" y="137" font-size="15">Server</text>
+      <text x="570" y="137" font-size="15">Client</text>
+      <text x="890" y="137" font-size="15">Server</text>
+    </g>
+    <g stroke="#94a3b8" stroke-dasharray="5 5">
+      <path d="M90 145V550M410 145V550M570 145V550M890 145V550"/>
+    </g>
+    <g stroke="#0284c7" stroke-width="2.5" marker-end="url(#blue)">
+      <path d="M410 186H90M890 186H570M410 470H90M890 470H570"/>
+    </g>
+    <g stroke="#dc2626" stroke-width="2.5" stroke-dasharray="5 4">
+      <path d="M410 252H255M890 252H735"/>
+    </g>
+    <g stroke="#dc2626" stroke-width="3">
+      <path d="M247 244L263 260M247 260L263 244M727 244L743 260M727 260L743 244"/>
+    </g>
+    <g stroke="#15803d" stroke-width="2.5" marker-end="url(#green)">
+      <path d="M410 318H90M890 318H570"/>
+    </g>
+    <g stroke="#a16207" stroke-width="2.5" marker-end="url(#amber)">
+      <path d="M410 384H90M890 384H570"/>
+    </g>
+    <g text-anchor="middle" font-size="14">
+      <text x="250" y="177" fill="#075985">Product chunk 1: delivered</text>
+      <text x="730" y="177" fill="#075985">Product chunk 1: delivered</text>
+      <text x="250" y="243" fill="#b91c1c">Product chunk 2: packet lost</text>
+      <text x="730" y="243" fill="#b91c1c">Product chunk 2: packet lost</text>
+      <text x="250" y="309" fill="#166534">Later bytes: reviews chunk 2</text>
+      <text x="730" y="309" fill="#166534">Reviews chunk 2</text>
+      <text x="250" y="344" font-size="13">Stored in TCP; not delivered to HTTP/2</text>
+      <text x="730" y="344" font-size="13" font-weight="600">Delivered to HTTP/3</text>
+      <text x="250" y="375" fill="#854d0e">Later bytes: delivery chunk 2</text>
+      <text x="730" y="375" fill="#854d0e">Delivery chunk 2</text>
+      <text x="250" y="410" font-size="13">Also waits behind the TCP byte gap</text>
+      <text x="730" y="410" font-size="13" font-weight="600">Delivered to HTTP/3</text>
+      <text x="250" y="461" fill="#075985">Product chunk 2: data retransmitted</text>
+      <text x="730" y="461" fill="#075985">Product chunk 2: data retransmitted</text>
+      <text x="250" y="510">TCP can now release the buffered bytes.</text>
+      <text x="250" y="536">HTTP/2 receives product, reviews, delivery data.</text>
+      <text x="730" y="510">Product chunk 2 can now be delivered.</text>
+      <text x="730" y="536">Other streams did not wait for this recovery.</text>
+    </g>
+    <rect x="40" y="566" width="400" height="36" rx="8" fill="#fef3c7"/>
+    <rect x="520" y="566" width="400" height="36" rx="8" fill="#dcfce7"/>
+    <g text-anchor="middle" font-size="14" font-weight="600">
+      <text x="240" y="590">One missing TCP range delays later stream data.</text>
+      <text x="720" y="590">Received data on other streams can progress.</text>
+    </g>
+    <g text-anchor="middle" font-size="14" fill="#475569">
+      <text x="480" y="650">Simplified example: one stream's data per illustrated packet; headers already decoded.</text>
+      <text x="480" y="674">Product, reviews, and delivery chunk 1 have already been delivered; only product 1 is drawn.</text>
+      <text x="480" y="698">Within each stream, data still has to be delivered in order.</text>
+      <text x="480" y="722">QUIC streams share bandwidth and congestion control; HTTP/3 header dependencies can also delay responses.</text>
+    </g>
+  </g>
+</svg>

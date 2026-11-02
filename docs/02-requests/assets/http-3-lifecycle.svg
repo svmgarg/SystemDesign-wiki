@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="1116" viewBox="0 0 760 1116" role="img" aria-labelledby="title desc">
+  <title id="title">HTTP/3: independent streams over QUIC with integrated TLS</title>
+  <desc id="desc">A fresh QUIC handshake integrates TLS without TCP setup. After HTTP/3 initialization, the browser sends product, reviews, and delivery requests on streams 0, 4, and 8. The server interleaves the first chunk of each response, then finishes delivery, product, and reviews in that order. Each stream retains its own chunk order. The connection can be reused or closed with QUIC CONNECTION_CLOSE. Response headers and acknowledgment details are omitted.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse"><path d="M0 0L8 4L0 8Z" fill="#334155"/></marker>
+  </defs>
+  <rect width="760" height="1116" rx="12" fill="#fff"/>
+  <g font-family="Segoe UI,Arial,sans-serif" fill="#0f172a">
+    <g text-anchor="middle">
+      <text x="380" y="34" font-size="23" font-weight="600">HTTP/3: concurrent streams over QUIC</text>
+      <text x="380" y="59" font-size="15">UDP transport; integrated TLS 1.3; time flows down</text>
+      <rect x="88" y="80" width="184" height="42" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+      <text x="180" y="107" font-size="18" font-weight="600">Client / browser</text>
+      <rect x="488" y="80" width="184" height="42" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+      <text x="580" y="107" font-size="18" font-weight="600">Server</text>
+    </g>
+    <rect x="60" y="142" width="640" height="238" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-dasharray="4 5"/>
+    <rect x="60" y="398" width="640" height="78" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-dasharray="4 5"/>
+    <rect x="60" y="494" width="640" height="470" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-dasharray="4 5"/>
+    <rect x="60" y="982" width="640" height="70" rx="12" fill="#fef3c7" stroke="#b45309" stroke-dasharray="4 5"/>
+    <g stroke="#64748b" stroke-width="2" stroke-dasharray="6 6">
+      <path d="M180 124V1062M580 124V1062"/>
+    </g>
+    <g font-size="16" font-weight="600">
+      <text x="78" y="168">1. QUIC + TLS handshake; no TCP setup</text>
+      <text x="78" y="424">2. HTTP/3 initialization (summarized)</text>
+      <text x="78" y="520">3. Three requests, then interleaved response chunks</text>
+    </g>
+    <g stroke="#334155" stroke-width="2.5" marker-end="url(#arrow)">
+      <path d="M180 212H580M580 286H180M180 354H580"/>
+      <path d="M580 1036H180"/>
+    </g>
+    <g stroke-width="2.5" marker-end="url(#arrow)">
+      <path d="M180 560H580M580 704H180M580 896H180" stroke="#0284c7"/>
+      <path d="M180 608H580M580 752H180M580 944H180" stroke="#15803d"/>
+      <path d="M180 656H580M580 800H180M580 848H180" stroke="#a16207"/>
+    </g>
+    <path d="M180 458H580" stroke="#334155" stroke-width="2.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <g text-anchor="middle" font-size="15">
+      <text x="380" y="203">Initial: TLS ClientHello (offers h3)</text>
+      <text x="380" y="255">Initial + Handshake packets:</text>
+      <text x="380" y="277">TLS ServerHello, certificate, Finished</text>
+      <text x="380" y="345">Handshake packet: TLS Finished</text>
+      <text x="380" y="449">Control streams and SETTINGS</text>
+      <text x="380" y="551" fill="#075985">Stream 0: GET /products/p123</text>
+      <text x="380" y="599" fill="#166534">Stream 4: GET /reviews</text>
+      <text x="380" y="647" fill="#854d0e">Stream 8: GET /delivery</text>
+      <text x="380" y="695" fill="#075985" font-weight="600">Stream 0: DATA, product chunk 1</text>
+      <text x="380" y="743" fill="#166534" font-weight="600">Stream 4: DATA, reviews chunk 1</text>
+      <text x="380" y="791" fill="#854d0e" font-weight="600">Stream 8: DATA, delivery chunk 1</text>
+      <text x="380" y="839" fill="#854d0e" font-weight="600">Stream 8: DATA, delivery chunk 2; response ends</text>
+      <text x="380" y="887" fill="#075985" font-weight="600">Stream 0: DATA, product chunk 2; response ends</text>
+      <text x="380" y="935" fill="#166534" font-weight="600">Stream 4: DATA, reviews chunk 2; response ends</text>
+      <text x="380" y="1008">4. Reuse, or send QUIC CONNECTION_CLOSE</text>
+      <text x="380" y="1076" font-size="13">Example order only; the server need not wait for all requests before responding.</text>
+      <text x="380" y="1095" font-size="13" fill="#475569">Response HEADERS, Retry, resumption, ACKs, and HANDSHAKE_DONE omitted.</text>
+      <text x="380" y="1112" font-size="13" fill="#475569">End of response uses QUIC stream FIN, not TCP FIN. Connection close is separate.</text>
+    </g>
+  </g>
+</svg>

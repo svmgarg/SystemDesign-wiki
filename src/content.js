@@ -1,9 +1,14 @@
-import { categories, documentEntries } from '../content.config';
+import { categories, documentEntries, documentRedirects } from '../content.config';
+export { documentRedirects };
 const sources = import.meta.glob('../docs/**/*.md', { query: '?raw', import: 'default', eager: true });
 export function documentRoute(file) {
     if (file === 'index.md')
         return '/introduction/';
     return `/${file.replace(/index\.md$/, '').replace(/\.md$/, '/')}`;
+}
+export function resolveDocumentRedirect(pathname, search = '', hash = '') {
+    const redirect = documentRedirects.find(entry => entry.from === pathname);
+    return redirect ? `${redirect.to}${search}${redirect.hash || hash}` : null;
 }
 export const documents = documentEntries.map(entry => {
     const source = sources[`../docs/${entry.file}`];

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="1080" viewBox="0 0 820 1080" role="img" aria-labelledby="title desc">
+  <title id="title">WebSocket over HTTP/1.1: secure setup, upgrade, duplex messages, and close</title>
+  <desc id="desc">The browser and server establish TCP and TLS, then exchange an HTTP/1.1 Upgrade request and 101 Switching Protocols. The browser sends a JSON subscription, receives an update, sends command c7, and receives an application-defined acknowledgment that c7 committed. A clean close exchanges WebSocket Close frames before the transport closes. Network failure instead requires application reconnect, resubscription, replay, and duplicate-safe command handling. Extended CONNECT is a different handshake, not shown here.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse"><path d="M0 0L8 4L0 8Z" fill="#334155"/></marker>
+  </defs>
+  <rect width="820" height="1080" rx="12" fill="#fff"/>
+  <g font-family="Segoe UI,Arial,sans-serif" fill="#0f172a">
+    <g text-anchor="middle">
+      <text x="410" y="34" font-size="24" font-weight="600">WebSocket: setup, two-way messages, and close</text>
+      <text x="410" y="61" font-size="15">Classic wss:// over HTTP/1.1; time flows downward</text>
+      <rect x="68" y="80" width="184" height="42" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+      <text x="160" y="107" font-size="18" font-weight="600">Browser / client</text>
+      <rect x="508" y="80" width="184" height="42" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+      <text x="600" y="107" font-size="18" font-weight="600">Server</text>
+    </g>
+    <rect x="40" y="142" width="740" height="100" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-dasharray="4 5"/>
+    <rect x="40" y="260" width="740" height="156" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-dasharray="4 5"/>
+    <rect x="40" y="434" width="740" height="252" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-dasharray="4 5"/>
+    <rect x="40" y="704" width="740" height="190" rx="12" fill="#fef3c7" stroke="#b45309" stroke-dasharray="4 5"/>
+    <g stroke="#94a3b8" stroke-width="2" stroke-dasharray="5 5">
+      <path d="M160 124V902M600 124V902"/>
+    </g>
+    <g font-size="16" font-weight="600">
+      <text x="58" y="168">1. Establish secure transport</text>
+      <text x="58" y="286">2. Ask to switch protocols</text>
+      <text x="58" y="460">3. Either side can send application messages</text>
+      <text x="58" y="730">4. Graceful close in the HTTP/1.1 form</text>
+    </g>
+    <g stroke="#334155" stroke-width="2.5" marker-start="url(#arrow)" marker-end="url(#arrow)">
+      <path d="M160 208H600M160 874H600"/>
+    </g>
+    <g stroke-width="2.5" marker-end="url(#arrow)">
+      <path d="M160 328H600M160 490H600M160 606H600M160 766H600" stroke="#0284c7"/>
+      <path d="M600 390H160M600 548H160M600 664H160M600 818H160" stroke="#15803d"/>
+    </g>
+    <g text-anchor="middle" font-size="15">
+      <text x="380" y="199">TCP + TLS handshakes (summarized)</text>
+      <text x="380" y="319">GET /live; Upgrade: websocket</text>
+      <text x="380" y="381">101 Switching Protocols</text>
+      <text x="380" y="481" fill="#075985">JSON message: subscribe to order o456</text>
+      <text x="380" y="539" fill="#166534">JSON message: order status changed</text>
+      <text x="380" y="597" fill="#075985">JSON command: cancel order; id: c7</text>
+      <text x="380" y="655" fill="#166534">Application acknowledgment: c7 committed</text>
+      <text x="380" y="757">WebSocket Close frame, code 1000</text>
+      <text x="380" y="809">WebSocket Close reply</text>
+      <text x="380" y="865">TLS + TCP close (summarized)</text>
+      <text x="410" y="930" font-size="15" font-weight="600">Application acknowledgments are designed by your API, not WebSocket.</text>
+      <text x="410" y="956" font-size="14">If the connection drops, reconnect, re-subscribe, and replay using retained history.</text>
+      <text x="410" y="982" font-size="14">If c7 committed but its reply was lost, retry the same ID with server-side deduplication.</text>
+      <text x="410" y="1008" font-size="14">A successful send() or empty bufferedAmount does not mean the command committed.</text>
+      <text x="410" y="1034" font-size="13" fill="#475569">HTTP/2 and HTTP/3 extended CONNECT uses a 2xx response and one stream, not this 101 upgrade.</text>
+      <text x="410" y="1060" font-size="13" fill="#475569">Frames can fragment messages. Two-way messaging does not create independent application streams.</text>
+    </g>
+  </g>
+</svg>
