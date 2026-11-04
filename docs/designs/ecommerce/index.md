@@ -6,6 +6,19 @@ An e-commerce checkout design for reserving quantities of a SKU while payment
 is in progress. Redis tracks stock and temporary TTL-backed reservation entries;
 PostgreSQL authoritatively confirms sales before Redis applies the stock update.
 
+A **SKU** (stock keeping unit) identifies a particular product variant, such
+as a black phone with 128 GB of storage. A **hold** temporarily sets aside a
+quantity while the customer pays. **TTL** (time to live) is the hold's remaining
+lifetime in Redis, not a payment deadline enforced by the payment provider.
+
+**First pass:** with 10 phones, a hold for 2 leaves 8 eligible for new holds
+without changing the stock count of 10. Persist the hold before starting payment.
+After verified payment, PostgreSQL checks stock and commits the sale; a saved
+outbox event then tells a worker to reduce Redis stock to 8 and remove the hold.
+If payment definitively fails, removing the hold leaves stock at 10.
+Payment success alone is not order confirmation: the database stock check can
+still reject a sale, requiring refund/recovery.
+
 ## Functional requirements
 
 - Check effective SKU availability and atomically create a temporary reservation.
@@ -38,6 +51,14 @@ The central goals are:
 This document focuses on checkout, reservation, payment orchestration, expiry, and consistency. Catalog search, recommendations, shipping, tax, promotions, and returns are outside the core scope, though they can integrate with the order lifecycle.
 
 ## 2. Core design decision
+
+“Heat map” here means a lookup structure keyed by SKU, not a color chart.
+**Lua** is the scripting language used to run the Redis check and hold creation
+as one atomic operation, with no other Redis command interleaving those steps.
+An **outbox** is work saved in the same database transaction as a state change
+so a background worker can deliver it after a crash. **Idempotency** makes a
+retry preserve the original outcome rather than charge or decrement stock twice;
+**reconciliation** compares saved states and repairs disagreement.
 
 Use Redis as the fast reservation coordination layer:
 

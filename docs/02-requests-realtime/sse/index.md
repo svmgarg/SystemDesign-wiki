@@ -4,13 +4,20 @@ Parent guide: [Networking & APIs](../../02-requests/index.md).
 Related: [WebSocket](../websocket/index.md) for frequent two-way messages.
 
 **Server-Sent Events** keeps an HTTP response open while the server writes
-UTF-8 events to the client. A shopping app can use it for order status,
-notifications, or progress updates. The channel is one-way, from server to
+UTF-8 events to the client. UTF-8 is a standard encoding for text. A shopping app
+can use it for order status, notifications, or progress updates. The channel is one-way, from server to
 client; occasional commands can still use ordinary POST requests.
 
-Use polling if updates are rare and some delay is acceptable. Choose WebSocket
+Use **polling**, repeatedly asking the server for the latest state, if updates
+are rare and some delay is acceptable. Choose WebSocket
 when both sides need frequent messages or binary payloads. Two-way application
 behavior alone does not require a two-way channel.
+
+For one successful update, the page opens `/events`, the order changes to
+`shipped`, and the server writes an `order_update` event. The page reads that
+event and changes the displayed status without starting another request.
+First follow this path through the wire format and browser example; replay and
+operating limits explain what to do when the connection no longer works normally.
 
 ## Connection lifecycle
 
@@ -114,9 +121,15 @@ history**. Use an ordered log shared by the serving instances, or another design
 that makes the same history available after a reconnect. Synchronize the
 replay-to-live handoff so no event falls into a gap.
 
+A **cursor** identifies a position in that history. If the browser remembers
+event `41`, the server can replay retained events `42` onward. The handoff must
+also include events arriving while replay runs, before switching to new live events.
+
 If a cursor is older than the retention window, define an explicit recovery
 policy. For example, a named `reset` event can ask the client to obtain a fresh
 snapshot and resume from a defined cursor. Do not silently skip missing history.
+A **snapshot** is the current state, such as the order's latest status, rather
+than every event that led to it.
 
 **Last-Event-ID is not a business acknowledgment.** The browser remembering an ID
 does not prove the application saved or acted on that event. A replay policy can
@@ -147,6 +160,7 @@ failure and authentication paths instead of assuming every error reconnects.
   queues. HTTP/1.1 streams compete under browser per-host connection limits;
   HTTP/2 and HTTP/3 still have concurrent-stream limits.
 - **Handle slow consumers explicitly:** close and replay, or coalesce updates
+  (combine them into one newer update)
   only when their semantics allow replacement. Never silently discard critical
   events merely to reduce memory use.
 - **Authorize access:** authenticate connection establishment, authorize every

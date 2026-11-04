@@ -7,6 +7,12 @@ Each title can have several physical copies, so the service tracks available
 capacity for each book and date. SQL confirms a reservation only when every
 requested date has capacity; Redis filters competing requests to reduce SQL load.
 
+Here, **SQL** means the relational database holding permanent booking records;
+**Redis** is a fast in-memory store holding provisional capacity counters.
+An **atomic** operation applies all its changes together or none. A database
+**transaction** groups several operations under that rule, and **row locks**
+make competing transactions wait while the selected dates are checked.
+
 ## Functional requirements
 
 - **Reserve a book:** Accept the book title, user, and requested start and end dates.
@@ -45,6 +51,10 @@ requested date has capacity; Redis filters competing requests to reduce SQL load
 
 SQL is the source of truth.
 
+For example, reserving one copy for six days uses one unit of capacity on each
+of six date rows, not six physical copies. The booking reserves title-level
+capacity; this model does not choose a particular physical copy.
+
 ### `Books`
 
 | Column | Purpose |
@@ -78,6 +88,9 @@ One row per book per date.
 | `start_date` | Reservation start |
 | `end_date` | Reservation end |
 | `status` | Pending, confirmed, cancelled, etc. |
+
+An **idempotency key** identifies one request: if the user retries because the
+response was lost, the service finds the original booking instead of booking again.
 
 Add a unique constraint on the appropriate idempotency key, such as `(user_id, request_id)`, to prevent duplicate bookings when the same request is retried.
 

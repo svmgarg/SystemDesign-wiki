@@ -10,6 +10,10 @@ Previous: [define the shop's requirements](../01-thinking.md).
 Follow a shopping request from transport setup to an API response, then choose
 how to deliver updates after that response. This is one continuous guide:
 
+On a first read, follow the request example and the HTTP versions in order, then
+continue through API contracts and timeouts. The realtime sections are the next
+step: they explain how the server sends news after an ordinary response.
+
 | What you want to understand | Start here |
 | --- | --- |
 | Requests, encryption, and connection reuse | [HTTP and transport](#what-is-http) |
@@ -52,8 +56,10 @@ Content-Type: application/json
 ```
 
 `200 OK` means the request succeeded. `Content-Type` describes the response
-body's format. The body contains the product data. These examples leave out
-some headers to focus on the message.
+body's format. **JSON** is a text format for named fields and values; the body
+above contains the product data. `price_minor: 500` means USD 5.00, using cents
+rather than a decimal price. These examples leave out some headers to focus on
+the message.
 
 HTTP defines **methods**, such as `GET` and `POST`; **headers**, such as
 `Accept` and `Authorization`; **status codes**, such as `200` and `404`; and how
@@ -67,6 +73,10 @@ not tell you which HTTP version carries the request.
 
 HTTP describes the messages, but something still has to carry them across the
 network.
+
+An HTTP message travels across the network in smaller pieces called **packets**.
+A **connection** is the communication state maintained by the two endpoints,
+not a new physical wire for each request.
 
 **TCP (Transmission Control Protocol)** delivers bytes reliably and in order.
 If some data is lost, TCP retransmits it. If the connection fails and delivery
@@ -88,21 +98,6 @@ certificate covers the requested hostname and comes from a trusted issuer.
 | TLS | Encrypts communication, detects changes, and authenticates the server |
 | HTTPS | Uses HTTP with TLS protection |
 
-[![HTTPS uses HTTP over TLS and TCP for HTTP/1.1 and HTTP/2, or HTTP/3 over QUIC with integrated TLS and UDP.](assets/https-layers.svg)](assets/https-layers.svg)
-
-For HTTP/1.1 and HTTP/2 over HTTPS, data passes through these layers on its way
-out of the client:
-
-```text
-HTTP message or frames --> TLS encryption --> TCP --> Network
-```
-
-For HTTP/3, the stack is different:
-
-```text
-HTTP/3 frames --> QUIC with TLS 1.3 --> UDP --> Network
-```
-
 **HTTPS is about protecting communication; the HTTP version is about how that
 communication is carried out.** The receiving side reverses the layers before the
 backend handles the HTTP request.
@@ -111,7 +106,73 @@ HTTPS does not prove that a website is honest or that its backend is secure.
 It also does not give a signed-in customer permission to read another
 customer's orders. The application must check those permissions.
 
-## HTTP lifecycle: from connection setup to closure
+For plain examples of shared secrets, public/private keys, and how modern TLS
+combines them, read [Symmetric & Asymmetric Encryption](encryption/index.md).
+
+## What changes between HTTP/1.1, HTTP/2, and HTTP/3?
+
+All versions still use methods, headers, status codes, and bodies. The main
+difference is how they send messages and share a connection when several
+requests are in progress.
+
+Follow the versions in order: **HTTP/1.0, HTTP/1.1, HTTP/2, then HTTP/3**.
+The side-by-side comparison comes after their individual lifecycle diagrams.
+
+**Connection reuse and multiplexing are different.** Reuse means sending later
+requests over an already established connection. Multiplexing means allowing
+multiple request/response exchanges to progress concurrently on that connection.
+HTTP/1.1 supports reuse but not multiplexing. HTTP/2 and HTTP/3 support both.
+
+Keep three questions separate: **Can I reuse the connection? Can exchanges
+progress concurrently on it? Is the communication encrypted?** HTTP/1.1 can
+reuse a connection without multiplexing. HTTP/1.1 and HTTP/2 can use HTTPS;
+HTTP/3 also protects communication, using the different transport explained
+in its subsection.
+
+Time runs from top to bottom in the lifecycle diagrams below. Colors identify
+exchanges, not different connections. HTTP/1.x examples use plain HTTP to
+isolate connection reuse; the HTTP/2 example uses HTTPS, as browsers normally do.
+An HTTP message or frame is not necessarily one network packet.
+
+### HTTP/1.0: normally open a connection for each request
+
+[![HTTP/1.0: handshake, GET /users, response, close; then a second handshake, GET /orders, response, close.](assets/http-1-0-lifecycle.svg)](assets/http-1-0-lifecycle.svg)
+
+The browser opens a TCP connection and sends `GET /users`. After returning
+`200 OK` with the user data, the server normally closes the connection.
+Fetching `/orders` then requires another connection and another TCP handshake.
+
+Some HTTP/1.0 implementations support an optional keep-alive extension, but
+persistent connections are not the default. The diagram shows the usual
+non-persistent flow. Its closure arrows summarize multiple FIN/ACK exchanges,
+not single TCP segments.
+
+### HTTP/1.1: reuse connections, without multiplexing
+
+The lifecycle diagram below shows this version: one handshake, then
+`GET /users` and `GET /orders` on the same connection, with the second request
+waiting for the first response to finish.
+
+```text
+Establish TCP once
+  -> product request  -> complete product response
+  -> reviews request  -> complete reviews response
+  -> delivery request -> complete delivery response
+  -> reuse again, or close the connection
+```
+
+If the browser wants exchanges to progress in parallel, it commonly opens
+several TCP connections to the same server, because
+HTTP/1.1 cannot interleave response bodies on one connection. That is a separate
+option, not a requirement for reuse, and each of those connections can also be
+reused.
+
+HTTP/1.1 also supports **pipelining**, which sends another request before the
+previous response finishes. Responses must still arrive in request order, so a
+slow first response delays later ones. This is called **head-of-line blocking**:
+work at the front holds up work behind it. Browsers rarely use pipelining.
+
+#### HTTP lifecycle: from connection setup to closure
 
 The diagram follows a browser sending `GET /users` and then `GET /orders` over
 the **same plain HTTP/1.1 connection**. Time runs from top to bottom. The TCP
@@ -119,7 +180,7 @@ handshake happens once, and later requests reuse the connection.
 
 [![One TCP handshake is followed by GET /users and GET /orders with complete responses on the same HTTP/1.1 connection, then optional FIN and ACK exchanges.](assets/http-lifecycle.svg)](assets/http-lifecycle.svg)
 
-### 1. Establish TCP with a three-way handshake
+##### 1. Establish TCP with a three-way handshake
 
 Before sending the HTTP request, the browser and server establish a TCP
 connection:
@@ -135,7 +196,7 @@ Sequence numbers let TCP track which bytes arrived and which need retransmission
 The handshake establishes transport state; it does not send an HTTP request or
 encrypt the connection.
 
-### 2. Send the HTTP request
+##### 2. Send the HTTP request
 
 The browser sends a request for the `/users` resource over the connection:
 
@@ -149,7 +210,7 @@ TCP carries the request bytes to the server. An HTTP message can span several
 TCP segments; each arrow in the diagram represents the complete message, not one
 packet.
 
-### 3. Receive the HTTP response
+##### 3. Receive the HTTP response
 
 If the request succeeds, the server sends `200 OK` and the response data:
 
@@ -164,7 +225,7 @@ Content-Length: 12
 The response body contains an empty list of users. TCP carries the bytes back to
 the browser, which reads the HTTP status, headers, and body.
 
-### 4. Reuse or close the connection
+##### 4. Reuse or close the connection
 
 **HTTP/1.1 connections are persistent by default.** The browser can send another
 request over the same connection without repeating the TCP handshake. A
@@ -188,110 +249,27 @@ TIME-WAIT if they initiate closure at the same time.
 
 For **HTTPS over HTTP/1.1 or HTTP/2**, a TLS handshake runs after TCP setup and
 before the first HTTP request. Reusing an
-established secure connection avoids repeating both handshakes. HTTP/3 uses QUIC
-with integrated TLS instead of this TCP lifecycle.
-
-## What changes between HTTP/1.1, HTTP/2, and HTTP/3?
-
-All versions still use methods, headers, status codes, and bodies. The main
-difference is how they send messages and share a connection when several
-requests are in progress.
-
-**Connection reuse and multiplexing are different.** Reuse means sending later
-requests over an already established connection. Multiplexing means allowing
-multiple request/response exchanges to progress concurrently on that connection.
-HTTP/1.1 supports reuse but not multiplexing. HTTP/2 and HTTP/3 support both.
-
-Keep three questions separate: **Can I reuse the connection? Can exchanges
-progress concurrently on it? Is the communication encrypted?** HTTP/1.1 can
-reuse a connection without multiplexing. HTTP/1.1 and HTTP/2 can use HTTPS;
-HTTP/3 always uses QUIC's integrated TLS security.
-
-The picture below compares all of them on the same job: fetch a product, its
-reviews, and its delivery options.
-
-[![HTTP/1.1 sends product, reviews, and delivery requests sequentially on one TCP connection, with complete responses before optional closure; HTTP/2 multiplexes streams over TCP; HTTP/3 multiplexes streams over QUIC.](assets/http-versions.svg)](assets/http-versions.svg)
-
-The HTTP/1.1 panel follows **one TCP connection**: establish it once, request the
-product and receive its complete response, then do the same for reviews and
-delivery. The connection can remain open for more requests or close afterward.
-**Chunks from different HTTP/1.1 exchanges cannot be multiplexed.** HTTP/2 and
-HTTP/3 add that ability using separate streams.
-
-Time runs from top to bottom in the lifecycle diagrams below. Colors identify
-exchanges, not different connections. HTTP/1.x examples use plain HTTP to
-isolate connection reuse; the HTTP/2 example uses HTTPS, as browsers normally do.
-An HTTP message or frame is not necessarily one network packet.
-
-The diagrams in the next subsections use some protocol words. Here is what they
-mean:
-
-| Term | Meaning |
-| --- | --- |
-| **Stream** | One numbered request/response conversation inside a connection (HTTP/2, HTTP/3) |
-| **Frame** | A small labelled piece of a message; `DATA` frames carry body bytes, `HEADERS` frames carry status and headers |
-| **Chunk** | An informal name here for body data in a DATA frame, not HTTP/1.1 chunked transfer encoding |
-| **HPACK / QPACK** | Header compression formats for HTTP/2 and HTTP/3 |
-| **ALPN** | Application-Layer Protocol Negotiation: client and server agree on the HTTP version during the TLS handshake |
-| **GOAWAY** | HTTP/2 shutdown notice whose last-stream ID helps identify requests the sender might have processed |
-| **QUIC** | A transport built on UDP that adds reliable streams, loss recovery, and congestion control |
-| **CONNECTION_CLOSE** | QUIC message that ends a connection (QUIC has no TCP FIN) |
-
-### HTTP/1.0: normally open a connection for each request
-
-[![HTTP/1.0: handshake, GET /users, response, close; then a second handshake, GET /orders, response, close.](assets/http-1-0-lifecycle.svg)](assets/http-1-0-lifecycle.svg)
-
-The browser opens a TCP connection and sends `GET /users`. After returning
-`200 OK` with the user data, the server normally closes the connection.
-Fetching `/orders` then requires another connection and another TCP handshake.
-
-Some HTTP/1.0 implementations support an optional keep-alive extension, but
-persistent connections are not the default. The diagram shows the usual
-non-persistent flow. Its closure arrows summarize multiple FIN/ACK exchanges,
-not single TCP segments.
-
-### HTTP/1.1: reuse connections, without multiplexing
-
-The lifecycle diagram earlier already shows this version: one handshake, then
-`GET /users` and `GET /orders` on the same connection, with the second request
-waiting for the first response to finish.
-
-```text
-Establish TCP once
-  -> product request  -> complete product response
-  -> reviews request  -> complete reviews response
-  -> delivery request -> complete delivery response
-  -> reuse again, or close the connection
-```
-
-If the browser wants exchanges to progress in parallel, it commonly opens
-several TCP connections to the same server (the second row of panel A), because
-HTTP/1.1 cannot interleave response bodies on one connection. That is a separate
-option, not a requirement for reuse, and each of those connections can also be
-reused.
-
-HTTP/1.1 also supports **pipelining**, which sends another request before the
-previous response finishes. Responses must still arrive in request order, so a
-slow first response delays later ones. This is called **head-of-line blocking**:
-work at the front holds up work behind it. Browsers rarely use pipelining.
+established secure connection avoids repeating both handshakes. HTTP/3 uses a
+different connection setup, explained after the HTTP/2 limitations below.
 
 ### HTTP/2: let several requests share one TCP connection
-
-[![HTTP/2: TCP, TLS with ALPN, three requests on streams 1, 3 and 5 without waiting, interleaved response pieces, then reuse or shutdown.](assets/http-2-lifecycle.svg)](assets/http-2-lifecycle.svg)
-
-During TLS setup the client and server select HTTP/2 using ALPN. The browser
-then sends the product, reviews, and delivery requests on streams 1, 3, and 5
-without waiting for any response. The server's response pieces arrive
-interleaved. This is one possible order, not a rule: the server does not have to
-wait for all requests, and responses can finish in a different order from their
-requests. Each response still starts with a `HEADERS` frame carrying its status;
-the diagram omits those to emphasize the `DATA` frames.
 
 HTTP/2 splits messages into small binary **frames**. Each request and its
 response use a **stream**, and frames from different streams can be mixed on the
 connection. The receiver uses stream identifiers to reassemble them. This is
 **multiplexing**: a slow product response does not have to finish before the
 server sends reviews. Within each stream, the pieces stay in order.
+
+[![HTTP/2: TCP, TLS with ALPN, three requests on streams 1, 3 and 5 without waiting, interleaved response pieces, then reuse or shutdown.](assets/http-2-lifecycle.svg)](assets/http-2-lifecycle.svg)
+
+During TLS setup the client and server select HTTP/2 using **ALPN
+(Application-Layer Protocol Negotiation)**. The browser
+then sends the product, reviews, and delivery requests on streams 1, 3, and 5
+without waiting for any response. The server's response pieces arrive
+interleaved. This is one possible order, not a rule: the server does not have to
+wait for all requests, and responses can finish in a different order from their
+requests. Each response still starts with a `HEADERS` frame carrying its status;
+the diagram omits those to emphasize the `DATA` frames.
 
 Product chunk 2 must follow product chunk 1; it does not have to follow the
 complete reviews response. "Mixed" does not mean scrambled response data.
@@ -314,7 +292,28 @@ bytes may belong to other streams. This is **TCP head-of-line blocking**.
 HTTP/2 removes the HTTP/1.1
 response-order restriction, but not this TCP restriction.
 
+### What happens if a packet is lost?
+
+Suppose the HTTP/2 connection is already established and all three responses
+have started. The packet carrying product chunk 2 is lost, but packets with
+reviews and delivery data reach the client.
+
+TCP stores those later bytes but cannot deliver them to TLS and HTTP/2 until
+the missing bytes arrive. Even data from unrelated streams waits behind that
+gap. Already delivered data is not taken back, and the server does not have to
+stop computing responses.
+
+**HTTP/2 multiplexes HTTP messages, but TCP still delivers one ordered byte
+sequence.** This remaining cross-stream delay motivates the transport change
+in HTTP/3 below.
+
 ### HTTP/3: use QUIC so loss need not hold up every stream
+
+HTTP/3 uses **QUIC** instead of TCP. QUIC runs over **UDP (User Datagram
+Protocol)**. UDP alone does not guarantee delivery or order; QUIC adds reliable
+delivery within streams, loss recovery, and congestion control, which adjusts
+the sending rate to network conditions. QUIC also builds TLS 1.3 into its
+connection setup, so HTTP/3 never sends unprotected HTTP just because it uses UDP.
 
 [![HTTP/3 sets up QUIC with integrated TLS, sends product, reviews, and delivery requests on streams 0, 4, and 8, and receives interleaved response chunks before optional CONNECTION_CLOSE.](assets/http-3-lifecycle.svg)](assets/http-3-lifecycle.svg)
 
@@ -328,28 +327,16 @@ finish in request order. After the responses the connection can stay open, or
 an endpoint can close it with `CONNECTION_CLOSE`. There are no TCP FIN/ACK
 exchanges.
 
-HTTP/3 uses **QUIC** instead of TCP. QUIC runs over **UDP (User Datagram
-Protocol)**. UDP alone does not guarantee delivery or order; QUIC adds reliable
-delivery within streams, loss recovery, and congestion control, which adjusts
-the sending rate to network conditions. QUIC also builds TLS 1.3 into its
-connection setup, so HTTP/3 never sends unprotected HTTP just because it uses UDP.
-
 QUIC can also reduce connection setup time, especially when resuming a previous
 connection. HTTP/3 is not always faster: results depend on the network, the
 implementation, and the requests.
 
-### What happens if a packet is lost?
+#### How HTTP/3 handles the same packet loss
 
-Suppose the connection is already established and all three responses have
-started. The packet carrying product chunk 2 is lost, but packets with reviews
-and delivery data reach the client.
+Now revisit the lost product packet with both transports. The diagram compares
+the HTTP/2 problem above with HTTP/3's independent stream delivery.
 
 [![With HTTP/2, later reviews and delivery bytes wait inside TCP until product data is recovered; with HTTP/3, received data on those streams can be delivered before product recovery.](assets/http-loss-comparison.svg)](assets/http-loss-comparison.svg)
-
-With **HTTP/2**, TCP stores later bytes but cannot deliver them to TLS and HTTP/2
-until the missing bytes arrive. Even data from unrelated streams waits behind
-that gap. Already delivered data is not taken back, and the server does not
-have to stop computing responses.
 
 With **HTTP/3**, QUIC can deliver received reviews and delivery data without
 waiting for product recovery. Later product data still waits for the missing
@@ -362,6 +349,17 @@ congestion control, and QPACK header dependencies can delay particular responses
 **HTTP/3 removes TCP's cross-stream delivery blocking, not every possible delay.**
 
 ### Compare the versions
+
+The picture below compares HTTP/1.1, HTTP/2, and HTTP/3 on the same job:
+fetch a product, its reviews, and its delivery options.
+
+[![HTTP/1.1 sends product, reviews, and delivery requests sequentially on one TCP connection, with complete responses before optional closure; HTTP/2 multiplexes streams over TCP; HTTP/3 multiplexes streams over QUIC.](assets/http-versions.svg)](assets/http-versions.svg)
+
+The HTTP/1.1 panel follows **one TCP connection**: establish it once, request the
+product and receive its complete response, then do the same for reviews and
+delivery. The connection can remain open for more requests or close afterward.
+**Chunks from different HTTP/1.1 exchanges cannot be multiplexed.** HTTP/2 and
+HTTP/3 add that ability using separate streams.
 
 | Feature | HTTP/1.0 | HTTP/1.1 | HTTP/2 | HTTP/3 |
 | --- | --- | --- | --- | --- |
@@ -376,6 +374,8 @@ congestion control, and QPACK header dependencies can delay particular responses
 
 For HTTPS, the layers are:
 
+[![HTTPS uses HTTP over TLS and TCP for HTTP/1.1 and HTTP/2, or HTTP/3 over QUIC with integrated TLS and UDP.](assets/https-layers.svg)](assets/https-layers.svg)
+
 ```text
 HTTP/1.1: HTTP messages --> TLS --> TCP --> Network
 HTTP/2:   HTTP frames   --> TLS --> TCP --> Network
@@ -385,6 +385,22 @@ HTTP/3:   HTTP frames   --> QUIC with TLS 1.3 --> UDP --> Network
 HTTP/1.1 and HTTP/2 can also run without TLS in some environments. HTTP/3 always
 uses QUIC's built-in security. There is no standard HTTP/1.2 between HTTP/1.1 and
 HTTP/2.
+
+#### Diagram glossary
+
+Use this reference after following the examples; these terms describe the
+mechanisms already introduced, rather than additional setup steps.
+
+| Term | Meaning |
+| --- | --- |
+| **Stream** | One numbered request/response conversation inside a connection (HTTP/2, HTTP/3) |
+| **Frame** | A small labelled piece of a message; `DATA` frames carry body bytes, `HEADERS` frames carry status and headers |
+| **Chunk** | An informal name here for body data in a DATA frame, not HTTP/1.1 chunked transfer encoding |
+| **HPACK / QPACK** | Header compression formats for HTTP/2 and HTTP/3 |
+| **ALPN** | Application-Layer Protocol Negotiation: client and server agree on the HTTP version during the TLS handshake |
+| **GOAWAY** | HTTP/2 shutdown notice whose last-stream ID helps identify requests the sender might have processed |
+| **QUIC** | A transport built on UDP that adds reliable streams, loss recovery, and congestion control |
+| **CONNECTION_CLOSE** | QUIC message that ends a connection (QUIC has no TCP FIN) |
 
 ## HTTP versions and your backend
 
@@ -648,6 +664,11 @@ and when they need to move to a new version.
 After returning an order response, the server may have more news, such as
 "your order shipped". The client can check for changes or subscribe to updates.
 Choose the communication pattern separately from the HTTP version.
+
+**Polling** means asking "has it changed?" repeatedly. **SSE (Server-Sent Events)**
+lets the server send updates down an open response. **WebSocket** opens a channel
+where both sides can send messages. The table compares these choices; the
+sections afterward show how each channel works.
 
 | | Polling | SSE | WebSocket |
 | --- | --- | --- | --- |

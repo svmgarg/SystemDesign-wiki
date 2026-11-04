@@ -40,7 +40,9 @@ SELECT id, status FROM orders
 WHERE id = :order_id AND customer_id = :authenticated_customer_id;
 ```
 
-The database treats the named parameters as values, not executable query text.
+Here, `:order_id` and `:authenticated_customer_id` are placeholders; the database
+library supplies their values separately. The database treats the named parameters
+as values, not executable query text.
 If no row matches, the service does not return the order. It also checks permission
 before changing or deleting an order or returning related data. Staff access requires
 a separate permission rule; a staff login alone is not enough.

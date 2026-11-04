@@ -1,7 +1,8 @@
 # Messaging
 
 **Asynchronous processing** lets an application accept work and finish it later.
-The application saves the work, returns a response, and lets a worker process it.
+The application saves the work, returns a response, and lets a **worker**, a
+process that handles background tasks, process it.
 With **synchronous processing**, the application waits for the operation's outcome
 before responding. Use asynchronous processing when the caller can wait for the
 result, but should not have to keep the original request open.
@@ -162,7 +163,8 @@ variation, called **jitter**, so many workers do not retry at the same instant.
 For example, three retries wait roughly 1, 2, and 4 seconds, plus jitter.
 That makes four total attempts: 100 jobs failing every attempt cause 400 calls.
 Set maximum attempts, maximum delay, and a total deadline. Count retries in
-clients and provider SDKs too; nested retry loops can multiply the calls.
+clients and provider **SDKs (software development kits)** too; nested retry loops
+can multiply the calls.
 
 After the retry limit, the worker or broker moves the message to a **dead-letter
 queue**, where it waits for inspection rather than more automatic attempts.

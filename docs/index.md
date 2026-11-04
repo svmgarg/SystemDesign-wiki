@@ -9,6 +9,11 @@ Personal notes, worked designs, architecture diagrams, and SQL examples.
 
 ## Your learning path
 
+If you are new to system design, start with the
+[shopping-app story below](#a-first-look-inside-a-shopping-app), then follow the
+seven chapters in order. You do not need to know SQL or cloud services to begin.
+The specialist notes and worked designs are a second pass, not prerequisites.
+
 Read in order or use these links for reference. The
 [shopping-app walkthrough](#a-first-look-inside-a-shopping-app) below introduces
 the components.
@@ -25,11 +30,20 @@ For a database-specific deep dive, read the
 [Apache Cassandra notes](storage/cassandra.md): partitioning, replication,
 consistency levels, Commit Log, Memtables, SSTables, compaction, and recovery.
 
+For the keys behind HTTPS, read
+[Symmetric & Asymmetric Encryption](02-requests/encryption/index.md): shared
+secrets, public/private keys, certificates, and protected requests.
+
 For direct large-file uploads, see
 [Multipart Uploads: AWS S3 and Azure](storage/multipart-uploads.md), including
 API examples, presigned part URLs, SAS authorization, retries, and finalization.
 
 ## Worked designs
+
+Start with **URL Shortener**: one request saves a link and another reads it.
+Then try **Ticket Booking** to see why two people requesting the same seat
+changes the design. Read the larger designs after the core chapters; their
+technology names are implementation choices, not a checklist to memorize.
 
 - [URL Shortener](designs/url-shortener/index.md): link creation, redirects,
   uniqueness, and caching.
@@ -52,6 +66,8 @@ API examples, presigned part URLs, SAS authorization, retries, and finalization.
   retries, and duplicate work.
 - [Ad Click Aggregator](designs/ad-click-aggregator/index.md): Kafka partitions,
   Spark Streaming, per-minute click counts, and popular-ad hotspots.
+- [Task Scheduler](designs/task-scheduler/index.md): one-time and recurring tasks,
+  Redis ready/in-flight sets, dispatch leases, and crash recovery.
 - [Distributed Cache](designs/distributed-cache.md): routing, replication,
   expiry, and failure handling.
 

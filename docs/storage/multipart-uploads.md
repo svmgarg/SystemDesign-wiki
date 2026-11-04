@@ -17,7 +17,12 @@ one object.
 
 These are conceptual API examples, not a runnable lab. Account names, signatures,
 IDs, ETags, and binary bodies are illustrative placeholders. HTTP libraries and
-SDKs supply actual body lengths and signing headers.
+**SDKs (software development kits)** supply actual body lengths and signing headers.
+
+**First pass:** follow the two-chunk example through authorization, direct upload,
+and finalization for one provider. Then compare the other provider. Retry, resume,
+and cleanup details matter once that successful path is clear; you can defer them
+on the first read.
 
 ## The three participants
 
@@ -29,6 +34,11 @@ SDKs supply actual body lengths and signing headers.
 
 File bytes go directly from the client to storage. The backend handles the
 control requests, not every byte of the file.
+
+Temporary **signed authorization** is permission to make specified storage
+requests, not the file data itself. First the backend gives the client that
+permission; then the client sends the actual bytes to storage. Finalization is a
+separate request telling storage which uploaded chunks form the finished file.
 
 ```text
 Client                  Application backend              Object storage
@@ -54,8 +64,9 @@ Client                  Application backend              Object storage
   |<----------------------------|                              |
 ```
 
-For example, split a 16 MiB file into two 8 MiB chunks. For a larger file, use a
-bounded number of concurrent uploads rather than starting every request at once.
+For example, split a 16 **MiB (mebibytes)** file into two 8 MiB chunks; one MiB is
+1,048,576 bytes. For a larger file, use a bounded number of concurrent uploads
+rather than starting every request at once.
 Chunk size and parallelism depend on file size, memory, bandwidth, and service
 limits.
 
@@ -65,6 +76,9 @@ limits.
 
 The backend chooses the bucket and an application-controlled object key, such as
 `uploads/u42/video.mp4`, then calls `CreateMultipartUpload`:
+
+A **bucket** is a named container for objects; an **object key** is a name within
+it, not a path on the backend's disk.
 
 ```http
 POST /uploads/u42/video.mp4?uploads HTTP/1.1
@@ -161,12 +175,13 @@ ETag: "part-1-etag"
 ```
 
 The second chunk uses the URL signed for part 2 and returns its own ETag.
+An **ETag (entity tag)** is a storage-returned identifier for that part's version;
+keep it as returned rather than trying to calculate it yourself.
+A **checksum** is a value computed from bytes to help detect accidental changes.
 If the backend signs additional headers, such as checksum headers, the client
 must send the corresponding values exactly as required by the signature.
 
 Keep each part number and returned ETag. Uploads may finish in any order.
-Retrying the same part number within the same upload replaces that part; ensure
-there are no uncontrolled concurrent retries writing different data to it.
 
 S3 supports up to 10,000 parts per multipart upload. Parts must be at least
 5 MiB, except the last part. Choose part sizes that accommodate the maximum file
@@ -174,7 +189,8 @@ size without exceeding the part-count limit.
 
 ### 4. Backend completes the upload
 
-The client submits the uploaded part manifest to the application:
+The client submits the uploaded part **manifest**, a list of part numbers and
+their returned ETags, to the application:
 
 ```http
 POST /api/uploads/u42/complete HTTP/1.1
@@ -237,6 +253,10 @@ COMPLETE state. An object URL is an address, not permission to read a private ob
 
 ### 1. Backend supplies the blob URL and SAS
 
+An Azure **blob** is a stored object, held in a named **container**.
+**SAS (Shared Access Signature)** is a signed token granting specified operations
+on a storage resource for a limited time.
+
 There is no S3-style initiation call returning an upload ID. The application
 creates its own session and chooses an isolated blob name for the attempt:
 
@@ -265,6 +285,9 @@ For this isolated new blob, fixed-width sequence strings give equal-length IDs:
 000002 -> Base64 -> MDAwMDAy
 ```
 
+**Base64** represents bytes using text characters. It is an encoding, not
+encryption; here it converts the sequence string into the required block-ID format.
+
 Block IDs must be valid Base64, use equal-length IDs for the blob, and respect
 the service's length limit. URL-encode Base64 values when placing them in query
 parameters; characters such as `+`, `/`, and `=` need correct encoding.
@@ -286,10 +309,6 @@ x-ms-request-id: request-001
 Block 2 uses `blockid=MDAwMDAy` with the second chunk. Authorization is in the
 SAS query, so the client does not also need an account-key Authorization header.
 The displayed SAS is a placeholder, not a usable token.
-
-Retrying a staged block with the same block ID replaces that uncommitted block.
-Keep the blob name and block IDs stable across retries. Avoid sharing a target
-blob between independent upload attempts.
 
 ### 3. Backend commits the ordered block list
 
@@ -340,6 +359,12 @@ status: UPLOADING | FINALIZING | COMPLETE | CANCELLED | FAILED
 createdAt, applicationDeadline
 ```
 
+For S3, retrying the same part number within the same upload replaces that part;
+ensure there are no uncontrolled concurrent retries writing different data to it.
+For Azure, retrying a staged block with the same block ID replaces that uncommitted
+block. Keep the blob name and block IDs stable across retries. Avoid sharing a
+target blob between independent upload attempts.
+
 Store or recover successful part/block identifiers and checksums. Browser memory
 alone does not support recovery after a tab closes. Resuming also requires the
 original file bytes or permission to select the same file again.
@@ -360,8 +385,10 @@ or assuming that every ETag is the file's MD5 hash.
 
 ## Browser configuration and cleanup
 
-- Configure storage CORS for the application's origins, methods, and required
-  request headers. For S3, expose the `ETag` response header so browser JavaScript
+- Configure storage **CORS (Cross-Origin Resource Sharing)**, rules controlling
+  cross-origin requests and browser scripts' access to responses, for the
+  application's origins, methods, and required request headers. For S3, expose
+  the `ETag` response header so browser JavaScript
   can collect it. CORS is not authorization.
 - Treat presigned URLs and SAS tokens as temporary credentials. Use HTTPS and
   keep signed query strings out of logs and public links.

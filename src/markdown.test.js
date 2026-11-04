@@ -79,6 +79,24 @@ describe('Markdown reading components', () => {
             expect(doc.source).not.toContain('02-requests-realtime/index.md');
         }
     });
+    it('presents HTTP lifecycle diagrams in version order before the combined comparison', () => {
+        const doc = documentById.get('networking');
+        const element = document.createElement('div');
+        element.innerHTML = renderDocument(doc).html;
+        const lifecycleImages = [...element.querySelectorAll('img')]
+            .map(image => image.getAttribute('src'))
+            .filter(source => /\/(?:http-1-0-lifecycle|http-lifecycle|http-2-lifecycle|http-3-lifecycle|http-versions)\.svg$/.test(source));
+        expect(lifecycleImages).toEqual([
+            'http-1-0-lifecycle', 'http-lifecycle', 'http-2-lifecycle', 'http-3-lifecycle', 'http-versions',
+        ].map(asset => `${doc.route}assets/${asset}.svg`));
+        const lifecycleHeading = element.querySelector('#http-lifecycle-from-connection-setup-to-closure');
+        expect(lifecycleHeading.tagName).toBe('H4');
+        const headings = renderDocument(doc).headings.map(heading => heading.title);
+        expect(headings.indexOf('What happens if a packet is lost?'))
+            .toBeGreaterThan(headings.indexOf('HTTP/2: let several requests share one TCP connection'));
+        expect(headings.indexOf('What happens if a packet is lost?'))
+            .toBeLessThan(headings.indexOf('HTTP/3: use QUIC so loss need not hold up every stream'));
+    });
     it('preserves inline protocols and links standalone children with valid anchors and page-local diagrams', () => {
         const doc = documentById.get('networking');
         const element = document.createElement('div');
@@ -117,6 +135,33 @@ describe('Markdown reading components', () => {
                 }
             }
         }
+    });
+    it('connects the encryption reading path with resolvable parent, child, and related-page links', () => {
+        const child = documentById.get('encryption');
+        const parent = documentById.get(child.parent);
+        for (const id of [parent.id, 'introduction']) {
+            const element = document.createElement('div');
+            element.innerHTML = renderDocument(documentById.get(id)).html;
+            expect(element.querySelector(`a[href="${child.route}"]`)).not.toBeNull();
+        }
+        const element = document.createElement('div');
+        element.innerHTML = renderDocument(child).html;
+        expect(element.querySelector(`a[href="${parent.route}"]`)).not.toBeNull();
+        for (const id of ['sse', 'websocket']) {
+            expect(element.querySelector(`a[href="${documentById.get(id).route}"]`)).not.toBeNull();
+        }
+        for (const link of element.querySelectorAll('a[href^="/"]')) {
+            const url = new URL(link.getAttribute('href'), 'https://wiki.local');
+            const target = documents.find(doc => doc.route === url.pathname);
+            expect(target, `Missing page for ${link.getAttribute('href')}`).toBeDefined();
+            if (url.hash) {
+                expect(renderDocument(target).headings.some(heading => heading.id === url.hash.slice(1))).toBe(true);
+            }
+        }
+        expect(resolveContentUrl('encryption/index.md', parent.file, '/SystemDesign-wiki/'))
+            .toBe(`/SystemDesign-wiki${child.route}`);
+        expect(resolveContentUrl('../index.md', child.file, '/SystemDesign-wiki/'))
+            .toBe(`/SystemDesign-wiki${parent.route}`);
     });
     it('keeps streaming examples open until their cleanup function is called', () => {
         for (const [id, api, cleanup] of [
@@ -175,8 +220,8 @@ describe('Markdown reading components', () => {
             }
         }
     });
-    it('links the ad-click design from the learning index with a page-local downloadable diagram', () => {
-        const doc = documentById.get('ad-click-aggregator');
+    it.each(['ad-click-aggregator', 'task-scheduler'])('links %s from the learning index with a page-local downloadable diagram', id => {
+        const doc = documentById.get(id);
         expect(renderDocument(documentById.get('introduction')).html).toContain(`href="${doc.route}"`);
         const element = document.createElement('div');
         element.innerHTML = renderDocument(doc).html;
@@ -206,7 +251,7 @@ describe('Markdown reading components', () => {
         expect(rendered.html).not.toContain('href="javascript:');
     });
     it('creates read-only Excalidraw slots instead of broken image tags', () => {
-        for (const id of ['distributed-cache', 'ticket-booking', 'uber', 'url-shortener']) {
+        for (const id of ['distributed-cache', 'ticket-booking', 'uber', 'url-shortener', 'task-scheduler']) {
             const element = document.createElement('div');
             element.innerHTML = renderDocument(documentById.get(id)).html;
             const slot = element.querySelector('[data-excalidraw-src]');

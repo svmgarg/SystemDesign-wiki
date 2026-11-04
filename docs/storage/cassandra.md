@@ -1,13 +1,15 @@
 # Apache Cassandra — Detailed System Design Notes
 
-Apache Cassandra is a **distributed, highly available, horizontally scalable NoSQL database** designed to handle large volumes of data across multiple machines and data centers without relying on a single master node.
+Apache Cassandra is a database that spreads data and work across multiple machines. Each machine running Cassandra is a **node**; the cooperating nodes form a **cluster**. Copies of data on other nodes can let requests continue when a node fails, subject to the required responses and configuration.
 
-Its architecture is optimized for high write throughput, fault tolerance, and predictable access patterns at scale.
+It is a **NoSQL** database: it does not use the general relational-table model taught in [Storage](../03-storage.md). Its design favors high **write throughput**, meaning many writes completed per second, and queries whose lookup keys are known in advance.
+
+**First pass:** follow one customer's orders through sections 1–4 and 6–7: which nodes hold them, how a write is saved, and how a read finds it. Sections 5 and 8–10 explain recovery and storage maintenance; return to their details after the normal path makes sense. You do not need to memorize compaction strategies to understand that path.
 
 ## 1. High-level architecture
 
 - **Peer-to-peer:** Nodes have equal roles; there is no permanent master for all database operations.
-- **Distributed partitioning:** Data is distributed across nodes using partition-key tokens.
+- **Distributed partitioning:** Rows are grouped by a chosen key; a number computed from that key (a token) determines where the group is stored.
 - **Replication:** Multiple nodes store copies of data.
 - **Tunable consistency:** Applications choose consistency levels for reads and writes.
 - **Local storage engine:** Each replica processes its portion of the data locally.
@@ -16,17 +18,17 @@ A client can connect to any Cassandra node. That node becomes the **coordinator 
 
 ## 2. Data model: keyspaces, tables and partitions
 
-Cassandra uses CQL (Cassandra Query Language), which resembles SQL but has different execution and data-modeling constraints.
+Cassandra uses CQL (Cassandra Query Language), which resembles SQL but has different execution and data-modeling constraints. A **partition** groups rows with the same partition-key value; Cassandra places copies of that group on selected nodes. A **token** is a number computed from that key to choose placement.
 
 | Concept | Meaning |
 |---|---|
-| Keyspace | Namespace that defines replication settings |
+| Keyspace | Named group of tables with shared replication settings |
 | Table | Collection of rows organized by a schema |
 | Partition key | Determines the token and partition placement |
 | Clustering columns | Order rows within a partition |
 | Primary key | Partition key plus any clustering columns |
 
-Example:
+For example, a shopping app needs to list one customer's newest orders. `UUID` (universally unique identifier) is an identifier type, `TIMESTAMP` records a time, and `DECIMAL` stores a decimal number. Assume a keyspace has already been created and selected:
 
 ```sql
 CREATE TABLE orders_by_customer (
@@ -44,6 +46,8 @@ Here:
 - Orders belonging to one customer are grouped into a partition.
 - Rows inside that partition are ordered by the clustering columns.
 
+Reading with `WHERE customer_id = <that customer's UUID>` selects that customer's partition. Cassandra does not have to ask every node for all customers' orders.
+
 **Important:** Cassandra tables are designed around query patterns. If an application needs to retrieve orders by customer and also by order ID independently, a separate table may be appropriate.
 
 Unlike a relational database, Cassandra generally does not support arbitrary joins and ad hoc queries efficiently. Queries typically need to specify a usable partition key, unless a suitable indexing mechanism is used.
@@ -59,11 +63,11 @@ Keep these concepts separate:
 - **Replication** stores copies on multiple nodes.
 - **Consistency level** controls how many replica responses are required for an operation.
 
-A partition key with too few distinct values can cause hot partitions. Extremely large partitions can also cause storage, latency and compaction problems.
+A partition key with too few distinct values can cause **hot partitions**, groups receiving too much work for their replicas. For example, grouping all orders under one country code can concentrate a busy country's traffic. Extremely large partitions can also cause storage, latency and compaction problems.
 
 ## 4. Cassandra write path
 
-The main write path is:
+Here, a **mutation** means a change that inserts, updates, or deletes data. The main write path is:
 
 `Client → Coordinator → Replica nodes → Commit Log + Memtable → Flush → SSTable → Compaction`
 
@@ -72,6 +76,8 @@ The main write path is:
 Any Cassandra node can receive a client request and act as coordinator for that request. It routes the mutation to the replicas responsible for the partition. It is not a permanent master.
 
 ### Step 2: Commit Log — the WAL
+
+**WAL** means **write-ahead log**: record a change for recovery before relying on its working copy in memory.
 
 The Commit Log is an append-oriented log stored on disk. It records mutations for crash recovery.
 
@@ -103,7 +109,7 @@ Important properties:
 
 A Memtable is flushed when Cassandra determines it needs to be flushed, for example because of memory thresholds, explicit flush operations, or other lifecycle conditions.
 
-The flush writes accumulated data to immutable SSTable files on disk.
+The flush writes accumulated data to **SSTables (Sorted String Tables)** on disk. These files keep data in sorted order and are **immutable**, meaning Cassandra does not change them in place; later updates go into memory and new files.
 
 After a successful flush, Cassandra updates its Commit Log bookkeeping so that log entries already safely persisted no longer need to be retained for recovery.
 
@@ -112,7 +118,7 @@ After a successful flush, Cassandra updates its Commit Log bookkeeping so that l
 Over time, a table can have many SSTables. Compaction merges selected SSTables into new SSTables. It helps Cassandra:
 - Reconcile multiple versions of the same data.
 - Remove obsolete values when safe.
-- Purge eligible tombstones when deletion and replica-consistency constraints allow.
+- Purge eligible **tombstones**, markers recording that data was deleted, when deletion and replica-consistency constraints allow.
 - Manage SSTable count and read overhead.
 
 Compaction is a background storage-management process, not part of every client write.
@@ -178,6 +184,8 @@ For RF = 3:
 
 `QUORUM = floor(RF / 2) + 1 = 2`
 
+`floor` rounds down. With replicas A, B, and C, a write confirmed by A and B and a read answered by B and C share B. This shared replica is the reason for the overlap rule below, not a promise that every replica is already up to date.
+
 For a simplified single-data-center example, when read and write operations use compatible replica sets and ordinary quorum consistency, the common overlap rule is:
 
 `R + W > RF`
@@ -199,7 +207,7 @@ Suppose RF = 3 and a partition is replicated on Nodes A, B and C. If Node A goes
 Cassandra uses several mechanisms to help replicas converge:
 - **Hinted handoff:** May retain hints for an unavailable replica and replay them when it returns.
 - **Read repair:** Can reconcile inconsistent replica data during eligible reads, depending on version and configuration.
-- **Anti-entropy repair:** Compares replica data and repairs inconsistencies, commonly using Merkle-tree-based comparison.
+- **Anti-entropy repair:** Compares replica data and repairs inconsistencies, commonly using Merkle-tree-based comparison. A Merkle tree summarizes groups of data with hashes so replicas can locate differences without initially exchanging every value.
 
 Do not assume hinted handoff alone guarantees that every missed write will be delivered. Repair planning and operational monitoring remain important.
 
@@ -241,6 +249,8 @@ The inserted data expires after 3,600 seconds, subject to Cassandra's expiration
 
 Compaction combines selected SSTables into new SSTables. Strategy determines which SSTables are selected and how data is organized.
 
+**Read amplification** is the extra storage work needed to answer a read, such as checking several files for one value.
+
 | Strategy | General idea | Common fit |
 |---|---|---|
 | STCS — Size-Tiered | Merge SSTables of similar size | General workloads with many similarly sized SSTables |
@@ -250,7 +260,7 @@ Compaction combines selected SSTables into new SSTables. Strategy determines whi
 
 These are starting points, not universal rules. The best strategy depends on Cassandra version, data distribution, read/write mix, retention pattern and operational requirements.
 
-Compaction consumes disk I/O, CPU and temporary disk space. Capacity planning must account for old and newly generated SSTables coexisting during compaction.
+Compaction consumes disk **I/O (input/output)**, **CPU (processor)** time and temporary disk space. Capacity planning must account for old and newly generated SSTables coexisting during compaction.
 
 ## 11. Horizontal scaling
 
@@ -285,6 +295,8 @@ A single extremely hot partition can remain a bottleneck even in a large cluster
 Cassandra supports lightweight transactions for specific conditional operations, but they have different performance and coordination costs from ordinary writes. They should not be treated as free global transactions.
 
 ## 13. Cassandra versus PostgreSQL and Redis
+
+**PostgreSQL** is a relational database, as used in the Storage chapter. **Redis** is a store that primarily operates on data in memory, often used for caches and counters; persistence is configurable. Cassandra's **wide-column** model groups keyed rows into partitions and supports rows with different stored columns. These labels describe organization, not interchangeable guarantees.
 
 | Feature | Cassandra | PostgreSQL | Redis |
 |---|---|---|---|
@@ -332,7 +344,7 @@ Poor partition design, hot partitions, excessive tombstones, compaction pressure
 
 ## 15. Final mental model
 
-Memorize these five flows:
+Use these five flows to explain the design in your own words:
 
 ### Write path
 `Client → Coordinator → Replicas → Commit Log + Memtable`

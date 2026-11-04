@@ -3,6 +3,10 @@
 This document captures detailed matching mechanics. The current architecture,
 quote flow, and booking design are in [Uber-System-Design.md](Uber-System-Design.md).
 
+Read that parent page first for REST/WebSocket transport, outbox delivery, and
+the difference between a ride, an offer, and an assignment. The Redis commands
+below illustrate the matching internals, not a complete runnable service.
+
 Temporarily reserve a driver before sending an offer, then confirm the durable
 assignment on acceptance. The current baseline uses WebSocket offer responses,
 one atomic Redis status-check-and-reservation call, and a fresh candidate search
@@ -131,6 +135,11 @@ These are alternative data layouts, not a requirement for separate Redis deploym
 The preferred direction is a combined location-and-status query using Redis Search, with separate short-lived reservation keys. Standard GEO queries return members and optional geographic metadata, not full driver documents.
 
 ### Preferred combined-query example
+
+**GEO** is a geographic field for coordinates. In this search schema, **TAG**
+supports exact labels such as `FREE`, and **NUMERIC** supports ranges such as
+“last seen within 15 seconds.” `FREE` is only candidate availability:
+a separate lease may already reserve that driver for another offer.
 
 Use Redis 8 with Redis Search available for combined geographic and status queries. Standard Redis GEO alone cannot filter arbitrary status fields.
 

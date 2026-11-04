@@ -8,6 +8,13 @@ waiting for a matching request. Messages may be text or binary. It fits chat,
 shared editing, games, or other frequent two-way traffic. Use `wss://` outside
 local development so communication is protected.
 
+For example, a page opens one channel, sends a request to subscribe to order
+`o456`, and receives its status updates on that same channel. It can later send a
+cancel command without opening a new connection. The server must still check
+permission and confirm the cancellation's result.
+On a first read, follow the handshake and browser example; the HTTP/2 and HTTP/3
+details can wait until you understand the classic HTTP/1.1 path.
+
 For occasional server updates, polling may be enough. For low-delay one-way
 notifications, SSE plus ordinary POST commands can be simpler. Neither a
 WebSocket nor SSE automatically proves that the application processed a message.
@@ -19,7 +26,10 @@ WebSocket nor SSE automatically proves that the application processed a message.
 ## WebSocket handshake
 
 The diagram shows classic WebSocket over HTTP/1.1. For `wss://`, TCP and TLS are
-established first, then the client asks to upgrade:
+established first, then the client asks to upgrade. **TCP (Transmission Control
+Protocol)** provides an ordered byte connection; **TLS (Transport Layer Security)**
+protects communication with encryption and server
+identity checks:
 
 ```http
 GET /live HTTP/1.1
@@ -46,7 +56,8 @@ It demonstrates that the server understood the handshake; it is **not user
 authentication or encryption**. TLS provides communication protection, and the
 application separately authenticates and authorizes the user.
 
-After this `101`, the HTTP/1.1 connection carries WebSocket frames, not ordinary
+After this `101`, the HTTP/1.1 connection carries WebSocket **frames**, protocol
+units containing message data or control information, not ordinary
 HTTP messages. `Origin` identifies the initiating browser page, while an optional
 `Sec-WebSocket-Protocol` lets the peers select an application subprotocol such
 as `chat.v1`.
@@ -86,11 +97,13 @@ function disconnect() {
 Call `disconnect()` when leaving the view. Sending while `readyState` is
 CONNECTING throws; send after the open event. `bufferedAmount` reports outgoing
 queued bytes, not whether the receiver processed a message. Bound outgoing
-queues and incoming work: the browser API has no automatic inbound backpressure.
+queues and incoming work: the browser API has no automatic inbound **backpressure**,
+a way to slow incoming data when the application cannot keep up.
 It also cannot set arbitrary request headers and does not reconnect for you.
 
-**Duplex is not multiplexing.** A WebSocket supports simultaneous communication
-in both directions, but topic labels in JSON do not create independent
+**Duplex is not multiplexing.** Duplex means communication in both directions;
+multiplexing carries multiple logical streams over one connection. A WebSocket
+supports simultaneous communication in both directions, but topic labels in JSON do not create independent
 HTTP/2-style streams. Messages in each direction still use one ordered channel.
 
 ## WebSocket over HTTP/2 and HTTP/3
@@ -112,7 +125,8 @@ In the HTTP/1.1 form the transport then closes. With extended CONNECT, the
 WebSocket's HTTP stream ends, not necessarily the shared transport connection.
 
 A network drop may have no close handshake. The application must reconnect with
-bounded exponential backoff and jitter, re-subscribe, and re-sync missed events.
+bounded exponential backoff and jitter (increasing waits with random variation),
+re-subscribe, and re-sync missed events.
 It must also decide when authentication failure or a policy close should stop retries.
 
 Within a live channel, messages retain their send order in each direction.

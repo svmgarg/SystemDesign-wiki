@@ -28,6 +28,11 @@ decisions must use current data.
 
 ## Define scope and rules
 
+Start with three plain questions: **What can the user do? How fast should it
+work? What mistake must never happen?** For the shop: place an order, get a timely
+reply, and never sell the last item to two customers. The names below give these
+different kinds of requirement a precise vocabulary.
+
 | Type | Definition | Shop example |
 | --- | --- | --- |
 | Functional requirement | What the service must do | The service accepts an order and returns its identifier. |

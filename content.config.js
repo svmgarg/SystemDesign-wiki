@@ -7,6 +7,7 @@ export const documentEntries = [
     { id: 'introduction', file: 'index.md', title: 'Shopping-app walkthrough', category: 'foundations' },
     { id: 'requirements', file: '01-thinking.md', title: 'Requirements', category: 'foundations' },
     { id: 'networking', file: '02-requests/index.md', title: 'Networking & APIs', category: 'foundations' },
+    { id: 'encryption', file: '02-requests/encryption/index.md', title: 'Symmetric & Asymmetric Encryption', category: 'foundations', parent: 'networking' },
     { id: 'sse', file: '02-requests-realtime/sse/index.md', title: 'Server-Sent Events (SSE)', category: 'foundations', parent: 'networking' },
     { id: 'websocket', file: '02-requests-realtime/websocket/index.md', title: 'WebSocket', category: 'foundations', parent: 'networking' },
     { id: 'storage', file: '03-storage.md', title: 'Storage', category: 'foundations' },
@@ -26,6 +27,7 @@ export const documentEntries = [
     { id: 'library-sql', file: 'designs/library_reservation_sql_queries.md', title: 'Library SQL queries', category: 'designs', parent: 'library' },
     { id: 'notifications', file: 'designs/notification-service.md', title: 'Notification Service', category: 'designs' },
     { id: 'ad-click-aggregator', file: 'designs/ad-click-aggregator/index.md', title: 'Ad Click Aggregator', category: 'designs' },
+    { id: 'task-scheduler', file: 'designs/task-scheduler/index.md', title: 'Task Scheduler', category: 'designs' },
     { id: 'distributed-cache', file: 'designs/distributed-cache.md', title: 'Distributed Cache', category: 'designs' },
     { id: 'exercises', file: '10-practice.md', title: 'Exercises & Reference', category: 'practice' },
 ];

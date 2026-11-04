@@ -10,6 +10,18 @@ This is the current design based on the architecture discussion and the latest
 ride-hailing diagram. Detailed matching mechanics are maintained separately in
 [Uber-Driver-Matching.md](Uber-Driver-Matching.md).
 
+**First pass:** a rider gets a fare quote and books it. The database saves the
+ride before background matching starts. Matching finds a nearby driver,
+temporarily reserves permission to offer that driver the ride, and sends the
+offer. Only a successful driver acceptance and database assignment confirm the
+match; finding a driver or delivering an offer does not.
+
+**GPS** (Global Positioning System) supplies location coordinates. **ETA**
+(estimated time of arrival) predicts travel time, which can differ greatly from
+straight-line distance. **TTL** (time to live) limits a cached quote or temporary
+lease. An **outbox** saves delivery work in the same database transaction as a
+ride/offer change, allowing a background publisher to retry after a crash.
+
 ## Functional requirements
 
 - Let riders request fare estimates, book rides, and cancel bookings.
@@ -141,6 +153,11 @@ assignment is created only after the driver accepts successfully.
 
 Use both REST and WebSockets.
 
+Here, **REST** means ordinary HTTP requests to resource APIs, such as creating
+a ride with `POST`. A **WebSocket** keeps a two-way connection open so the server
+can send an offer without waiting for a new request. See
+[Networking & APIs](../../02-requests/index.md) for those request basics.
+
 | Operation | Proposed interface |
 |---|---|
 | Get fare estimate | REST: GET /quotes with pickup and destination query parameters |
@@ -229,6 +246,11 @@ Use one active offer per ride and one lease per driver during normal dispatch.
 This prevents concert-exit demand from flooding the same driver with many offers.
 
 ### One Redis invocation to validate and reserve
+
+A **lease** gives one offer temporary ownership of a driver reservation.
+A **Lua script** performs the status check and lease creation atomically:
+no competing Redis command can run between those steps.
+“Top-K” below means a shortlisted batch of K candidates, not assigned drivers.
 
 An earlier top-K result may still contain a driver who has since accepted another
 ride. Acquiring only a lease is insufficient once their old lease expires.

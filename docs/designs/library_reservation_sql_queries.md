@@ -1,5 +1,16 @@
 # Library Reservation: SQL Transaction Queries
 
+Read the [library design](library_reservation_system_design.md) first for the
+book-and-date capacity model and Redis's provisional role. This page zooms in
+on the SQL step; it assumes you can read `SELECT`, `UPDATE`, and `INSERT`.
+The snippets are stages of **one transaction on the same database connection**,
+not separate requests.
+
+**First pass:** for one copy from October 15–21, lock the six date rows,
+check that each has a copy, subtract one from each, insert one booking, and
+commit together. `COMMIT` makes the changes permanent; `ROLLBACK` undoes them.
+The checks between snippets are application logic, not automatic SQL behavior.
+
 This example uses PostgreSQL-style SQL and the schema:
 
 - `BookAvailability(book_id, date, total_count, avail_count)`

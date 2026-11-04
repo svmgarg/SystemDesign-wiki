@@ -103,7 +103,9 @@ separated by a **network partition**. A client may still reach each side. If one
 side confirms a write, the other side cannot learn that write while separated.
 It cannot both return a guaranteed up-to-date value and always complete the read.
 
-The **CAP theorem** describes this limit: during a partition, a replicated system
+**CAP** stands for **consistency, availability, and partition tolerance**.
+Partition tolerance means accounting for network breaks between nodes, not
+making those breaks disappear. The **CAP theorem** describes this limit: during a partition, a replicated system
 cannot guarantee both linearizability and availability. Here, **CAP availability**
 requires every request received by a non-failing node to eventually complete with
 a response that satisfies the operation, not simply an error. It has no fixed

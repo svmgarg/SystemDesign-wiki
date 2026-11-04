@@ -97,18 +97,22 @@ describe('Documentation sidebar', () => {
         expect(onNavigate).toHaveBeenCalledOnce();
         expect(container.querySelector('a[aria-current="page"]').textContent).toBe('Apache Cassandra');
     });
-    it('nests restored realtime children and opens their complete ancestry on direct navigation', async () => {
+    it.each([
+        ['/02-requests-realtime/sse/', 'Server-Sent Events (SSE)'],
+        ['/02-requests/encryption/', 'Symmetric & Asymmetric Encryption'],
+    ])('opens networking ancestry on direct navigation to %s', async (route, title) => {
         seedWorkspace({ collapsedGroups: ['foundations', 'document:networking'] });
-        await renderSidebar('/02-requests-realtime/sse/');
+        await renderSidebar(route);
         expect(container.querySelectorAll('a[href="/02-requests/"]')).toHaveLength(1);
         expect(container.querySelector('a[href="/02-requests-realtime/"]')).toBeNull();
         expect(button('Collapse Networking & Realtime APIs')).toBeUndefined();
-        expect(container.querySelector('a[aria-current="page"]').textContent).toBe('Server-Sent Events (SSE)');
+        expect(container.querySelector('a[aria-current="page"]').textContent).toBe(title);
         expect(button('Foundations').getAttribute('aria-expanded')).toBe('true');
         const toggle = button('Collapse Networking & APIs');
         expect(toggle.getAttribute('aria-expanded')).toBe('true');
         const children = container.querySelector(`[id="${toggle.getAttribute('aria-controls')}"]`);
         expect([...children.querySelectorAll('a')].map(link => link.getAttribute('href'))).toEqual([
+            '/02-requests/encryption/',
             '/02-requests-realtime/sse/', '/02-requests-realtime/websocket/',
         ]);
         await click(children.querySelector('a[href="/02-requests-realtime/websocket/"]'));

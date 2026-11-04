@@ -13,6 +13,17 @@ Content providers upload source files directly to platform-managed S3 storage.
 Application services authorize and finalize uploads; background workers read
 the stored source and prepare streaming outputs.
 
+**First pass:** a studio uploads the original movie to **S3**, AWS's object
+storage service. Workers turn it into several playback qualities, then validate
+them before publication. When a viewer presses Play, the application checks
+permission and returns a **manifest**, a small playlist describing the available
+media. The player fetches short playback segments through a **CDN** (content
+delivery network), which serves cached files from servers near viewers.
+The uploaded original is not the file viewers stream.
+
+The upload mechanics build on [Multipart Uploads](../../storage/multipart-uploads.md);
+you can follow the successful flow here before studying those lower-level requests.
+
 ## Functional requirements
 
 - Let authorized content providers create resumable upload sessions for large videos.
@@ -62,7 +73,7 @@ playback; those need separate workload estimates.
 | Video View Service | Check entitlement and readiness, then establish playback authorization |
 | CDN | Cache and deliver manifests and media segments |
 | Origin shield / shared cache | Reduce repeated origin fetches across downstream CDN caches |
-| DRM license service | Authorize license requests for encrypted playback on supported devices |
+| DRM (digital rights management) license service | Authorize access to media decryption keys and playback policies on supported devices |
 
 The splitter, encoder, and packager are logical stages. An existing media system
 can combine them; they do not all need separately deployed custom services.
@@ -176,6 +187,11 @@ The client uploads a bounded number concurrently, collects part numbers and
 ETags, and retries failed parts with backoff. It does not load the entire source
 into RAM. Configure CORS and expose ETag so a browser can read it.
 
+An **ETag** is the storage response's identifier for an uploaded part; completion
+uses these identifiers to name the accepted parts. **CORS** (cross-origin
+resource sharing) rules allow the browser to upload to the storage domain and
+read the required response headers.
+
 If a URL expires, the client reauthorizes the same owned session through the
 backend. Resuming after an application restart requires saved progress and access
 to the same local source bytes.
@@ -268,6 +284,12 @@ pipeline starts. Its upload parts are not automatically valid video files.
 
 ### Container and compression information
 
+This section explains why parallel processing needs media-aware tools; it is
+not a requirement to implement a video codec. A **container**, such as MP4,
+organizes tracks and metadata. A **codec** encodes and decodes compressed
+audio/video; a **demuxer** separates the container's tracks. A **packet** is
+a unit of compressed track data, not necessarily one network packet.
+
 An MP4 contains video/audio tracks and metadata describing codecs, timestamps,
 and where samples are stored. A demuxer reads that container and exposes packets
 for each track.
@@ -323,6 +345,10 @@ time bases, and codec-specific parameters.
 
 ## Encoding, audio, and packaging
 
+A **rendition** is one encoded playback variant; the **ladder** is the set of
+variants from which the player chooses. **Bitrate** measures encoded bits per
+second, whereas 720p describes image height, not transfer speed.
+
 Workers decode source frames, resize them, and encode coordinated renditions
 such as 1080p, 720p, and 480p. For suitable 4K sources and supported devices, the
 ladder may also include 2160p; constrained connections may use 360p.
@@ -349,6 +375,8 @@ resolution. **Packaging** organizes encoded tracks into a delivery format.
 They are different operations even if one tool performs both.
 
 Create HLS playlists or DASH manifests and media segments for streaming.
+**HLS** (HTTP Live Streaming) and **DASH** (Dynamic Adaptive Streaming over HTTP)
+are delivery formats for playlists and segments, not video codecs.
 Coordinate segment/switching boundaries across representations so the player can
 change quality without discontinuities.
 
@@ -421,7 +449,8 @@ Video processing: UPLOADING -> PROCESSING -> QC_PENDING -> READY
 Catalog: DRAFT -> PUBLISHED -> UNPUBLISHED
 ```
 
-QC_PENDING means encoded/packaged outputs await quality validation or approval.
+**QC** means quality control. QC_PENDING means encoded/packaged outputs await
+quality validation or approval.
 READY means the required assets and outputs have passed those checks. Catalog
 publication separately requires editorial approval, release time, and regional
 rights; a READY title is not automatically playable everywhere.

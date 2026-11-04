@@ -25,6 +25,16 @@ describe('Markdown catalog', () => {
         expect(searchDocuments('foundations')[0].category).toBe('foundations');
         expect(searchDocuments('zzzz-no-document')).toEqual([]);
     });
+    it('registers the encryption guide as a searchable networking child at its own canonical route', () => {
+        const child = documentById.get('encryption');
+        expect(child.parent).toBe(documentById.get('networking').id);
+        expect(child.category).toBe('foundations');
+        expect(child.route).toBe('/02-requests/encryption/');
+        expect(documentRoute(child.file)).toBe(child.route);
+        expect(documentByFile.get(child.file)).toBe(child);
+        expect(searchDocuments('Symmetric & Asymmetric Encryption')).toContain(child);
+        expect(resolveDocumentRedirect(child.route)).toBeNull();
+    });
     it('keeps one canonical networking guide with searchable direct children and legacy parent redirects', () => {
         const networking = documentById.get('networking');
         expect(networking.route).toBe('/02-requests/');
