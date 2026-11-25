@@ -19,6 +19,26 @@ describe('Markdown catalog', () => {
         expect(documentRoute('index.md')).toBe('/introduction/');
         expect(documentByFile.get('index.md').source).toContain('A first look inside a shopping app');
     });
+    it('keeps the coding learning path separate from system design and searchable', () => {
+        const coding = documentById.get('coding');
+        expect(coding.route).toBe('/coding/');
+        expect(coding.category).toBe('coding');
+        const chapters = documents.filter(doc => /^coding\/\d/.test(doc.file));
+        expect(chapters).toHaveLength(19);
+        const topics = documents.filter(doc => doc.file.startsWith('coding/topics/'));
+        expect(topics).toHaveLength(13);
+        for (const topic of topics) {
+            expect(topic.parent).toBe(coding.id);
+            expect(chapters.some(chapter => chapter.parent === topic.id)).toBe(true);
+        }
+        for (const chapter of chapters) {
+            expect(topics.some(topic => topic.id === chapter.parent)).toBe(true);
+            expect(chapter.category).toBe('coding');
+            expect(chapter.route).toBe(`/${chapter.file.replace('.md', '/')}`);
+        }
+        expect(searchDocuments('Balloons')).toContain(documentById.get('coding-dynamic-programming'));
+        expect(documentById.get('coding-answers').category).toBe('coding');
+    });
     it('searches titles, categories and full document text', () => {
         expect(searchDocuments('Requirements')[0].id).toBe('requirements');
         expect(searchDocuments('FOR UPDATE').some(doc => doc.id === 'library-sql')).toBe(true);

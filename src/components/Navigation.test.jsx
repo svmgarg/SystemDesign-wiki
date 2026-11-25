@@ -89,6 +89,23 @@ describe('Documentation sidebar', () => {
         await click(button('Open matching directly'));
         expect(button('Collapse Uber System Design')).toBeTruthy();
     });
+    it('opens coding topics and their detailed pages without mixing them into system designs', async () => {
+        seedWorkspace({ collapsedGroups: ['coding', 'document:coding', 'document:coding-topic-arrays'] });
+        await renderSidebar('/coding/03-prefix-sums/');
+        expect(button('Coding & DSA').getAttribute('aria-expanded')).toBe('true');
+        expect(container.querySelector('.topic-group .group-toggle').textContent).toBe('Coding & DSA');
+        expect(button('Collapse Coding and DSA study guide').getAttribute('aria-expanded')).toBe('true');
+        const topic = button('Collapse Arrays & Range Patterns');
+        expect(topic.getAttribute('aria-expanded')).toBe('true');
+        const children = container.querySelector(`[id="${topic.getAttribute('aria-controls')}"]`);
+        expect([...children.querySelectorAll('a')].map(link => link.getAttribute('href'))).toEqual([
+            '/coding/02-arrays/', '/coding/03-prefix-sums/', '/coding/04-two-pointers/',
+        ]);
+        expect(children.querySelector('a[aria-current="page"]').textContent).toBe('Prefix Sums & Range Updates');
+        await click(topic);
+        expect(children.hidden).toBe(true);
+        expect(container.querySelector('a[href="/designs/url-shortener/"]')).not.toBeNull();
+    });
 
     it('keeps the navigation callback for closing the mobile drawer on link selection', async () => {
         const onNavigate = vi.fn();

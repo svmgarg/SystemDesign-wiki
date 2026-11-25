@@ -114,7 +114,8 @@ export function DocumentPage({ doc, variant = 'workspace' }) {
             navigate(`${pathname}${url.search}${url.hash}`);
         }
     }
-    return <div className={`document-layout variant-${variant}`}>
+    const topicOverview = doc.id === 'coding' || doc.file.startsWith('coding/topics/');
+    return <div className={`document-layout variant-${variant}${topicOverview ? ' topic-overview' : ''}`}>
     <div className="reading-progress" aria-hidden="true"><div style={{ transform: `scaleX(${progress})` }}/></div>
     <article className="learning-document">
       <nav className="breadcrumbs" aria-label="Breadcrumb">

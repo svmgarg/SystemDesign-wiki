@@ -54,6 +54,17 @@ After reading a chapter, try its exercise before opening the answer guidance.
 [Exercises & Reference](docs/10-practice.md) provides additional practice and
 links for further reading.
 
+## Coding interview notes
+
+The separate [Coding & DSA study guide](docs/coding/index.md) imports the supplied
+interview-study PDF's coverage as 13 topic sections with 19 detail pages,
+language-neutral pseudocode, diagrams, and 320 self-tests with a separate linked
+answer key. Open `/coding/` locally or use
+**Coding** in the top navigation. System-design notes remain unchanged.
+Completion statements in the source describe its author's history, not your
+progress; the final Dynamic Programming checkpoint remains pending in that
+history.
+
 ## Documentation standard
 
 Write each page in plain technical English. Start by defining the topic, then

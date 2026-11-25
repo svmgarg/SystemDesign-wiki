@@ -24,6 +24,7 @@ export function Header({ onSearch, onMenu, focused }) {
             { title: 'Home', to: '/', active: pathname === '/' },
             { title: 'Learn', to: '/topics/foundations/', active: doc?.category === 'foundations' || pathname === '/topics/foundations/' },
             { title: 'Designs', to: '/topics/designs/', active: doc?.category === 'designs' || pathname === '/topics/designs/' },
+            { title: 'Coding', to: '/topics/coding/', active: doc?.category === 'coding' || pathname === '/topics/coding/' },
             { title: 'Practice', to: '/topics/practice/', active: doc?.category === 'practice' || pathname === '/topics/practice/' },
         ].map(item => <Link key={item.to} to={item.to} className={item.active ? 'primary-link active' : 'primary-link'} aria-current={item.active ? 'true' : undefined}>{item.title}</Link>)}
     </nav>
@@ -60,6 +61,10 @@ function DocumentBranch({ doc, onNavigate }) {
 export function Sidebar({ onNavigate }) {
     const { collapsedGroups, toggleGroup, expandGroups, toggleSidebar } = useWorkspace();
     const { pathname } = useLocation();
+    const activeCategory = documents.find(doc => doc.route === `${pathname.replace(/\/$/, '')}/`)?.category;
+    const navigationCategories = activeCategory
+        ? [...categories.filter(category => category.id === activeCategory), ...categories.filter(category => category.id !== activeCategory)]
+        : categories;
     const id = useId();
     useEffect(() => {
         const current = documents.find(doc => doc.route === `${pathname.replace(/\/$/, '')}/`);
@@ -89,7 +94,7 @@ export function Sidebar({ onNavigate }) {
         <Icon size={16} aria-hidden="true"/><span>{title}</span>
       </NavLink>)}
     </div>
-    {categories.map(category => {
+    {navigationCategories.map(category => {
             const expanded = !collapsedGroups.includes(category.id);
             const groupId = `${id}-${category.id}`;
             return <section className="topic-group" key={category.id}>

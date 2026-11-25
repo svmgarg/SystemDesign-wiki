@@ -4,11 +4,11 @@
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-md: 1rem;
-  --text-body: 1.125rem;
-  --text-h1: clamp(1.75rem, 3vw, 2rem);
-  --text-h2: 1.375rem;
+  --text-body: 1rem;
+  --text-h1: clamp(1.5rem, 2.5vw, 1.75rem);
+  --text-h2: 1.25rem;
   --text-h3: 1.125rem;
-  --line-body: 1.75;
+  --line-body: 1.6;
   --page: #ffffff;
   --navigation: #f8f9fa;
   --header-bg: #ffffff;
@@ -29,7 +29,7 @@
   --warning-bg: #fff9ed;
   --warning-border: #dec68f;
   --danger: #a0362c;
-  --header-height: 68px;
+  --header-height: 60px;
   --sidebar-width: 288px;
   --reading-width: 46rem;
   --radius: 6px;

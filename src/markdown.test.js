@@ -8,6 +8,61 @@ import { documentById, documents } from './content';
 import { renderDocument, resolveContentUrl } from './markdown';
 
 describe('Markdown reading components', () => {
+    it('keeps coding questions separate from all 320 answers with working links and local diagrams', () => {
+        const coding = documents.filter(doc => doc.category === 'coding');
+        const rendered = new Map(coding.map(doc => {
+            const element = document.createElement('div');
+            element.innerHTML = renderDocument(doc).html;
+            return [doc.route, element];
+        }));
+        const answers = rendered.get(documentById.get('coding-answers').route);
+        const questionIds = [];
+        let diagramCount = 0;
+        for (const doc of coding) {
+            const element = rendered.get(doc.route);
+            for (const link of element.querySelectorAll('a[href^="/coding/"]')) {
+                const url = new URL(link.getAttribute('href'), 'https://wiki.local');
+                const target = rendered.get(url.pathname);
+                expect(target, `Missing coding page: ${link.getAttribute('href')}`).toBeDefined();
+                if (url.hash) expect(target.querySelector(`[id="${url.hash.slice(1)}"]`),
+                    `Missing coding anchor: ${link.getAttribute('href')}`).not.toBeNull();
+            }
+            for (const image of element.querySelectorAll('img')) {
+                diagramCount++;
+                expect(image.alt).toBeTruthy();
+                expect(existsSync(resolve('docs', image.getAttribute('src').slice(1)))).toBe(true);
+            }
+            if (!/^coding\/\d/.test(doc.file)) continue;
+            expect([...element.querySelectorAll('h3')].some(heading => /^A\d+\.\d+$/.test(heading.textContent))).toBe(false);
+            for (const heading of element.querySelectorAll('h3')) {
+                if (!/^[QE]\d+\.\d+$/.test(heading.textContent)) continue;
+                const id = heading.textContent;
+                questionIds.push(id);
+                const answerId = `${id.startsWith('Q') ? 'a' : 'e'}${id.slice(1).replace('.', '')}`;
+                const answer = answers.querySelector(`[id="${answerId}"]`);
+                expect(answer, `Missing answer for ${id}`).not.toBeNull();
+                let next = answer.nextElementSibling;
+                while (next && next.tagName !== 'H3' && !next.querySelector(`a[href="${doc.route}#${heading.id}"]`))
+                    next = next.nextElementSibling;
+                expect(next?.querySelector(`a[href="${doc.route}#${heading.id}"]`), `Missing return link for ${id}`).not.toBeNull();
+            }
+        }
+        expect(questionIds).toHaveLength(320);
+        expect(new Set(questionIds).size).toBe(320);
+        expect(answers.querySelectorAll('h3')).toHaveLength(320);
+        expect(diagramCount).toBe(46);
+        const arrays = rendered.get(documentById.get('coding-arrays').route);
+        expect(arrays.querySelector('.code-toolbar span').textContent).toBe('PSEUDOCODE');
+        expect(arrays.querySelector('.code-block pre').textContent).toContain('FUNCTION MaxSubarraySum(nums)');
+        expect(arrays.querySelector('.code-block pre').textContent).toContain('ending <- nums[0]');
+        for (const doc of coding) {
+            const blocks = new MarkdownIt().parse(doc.source, {}).filter(token => token.type === 'fence');
+            for (const block of blocks) {
+                expect(block.info, `${doc.file} should teach pseudocode`).toBe('pseudocode');
+                expect(block.content).not.toMatch(/\b(?:public|private|static)\b|new (?:List|Dictionary|PriorityQueue)</);
+            }
+        }
+    });
     it('renders every document with a single external title and generated heading anchors', () => {
         for (const doc of documents) {
             const rendered = renderDocument(doc);
@@ -16,8 +71,9 @@ describe('Markdown reading components', () => {
             expect(rendered.title).toBeTruthy();
             expect(element.querySelector('h1')).toBeNull();
             expect(new Set(rendered.headings.map(item => item.id)).size).toBe(rendered.headings.length);
+            const ids = new Set([...element.querySelectorAll('[id]')].map(node => node.id));
             for (const heading of rendered.headings) {
-                expect(element.querySelector(`[id="${heading.id}"]`)).not.toBeNull();
+                expect(ids.has(heading.id)).toBe(true);
             }
         }
     });
