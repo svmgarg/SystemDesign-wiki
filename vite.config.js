@@ -56,10 +56,10 @@ export default defineConfig({
         }))),
     },
     server: {
-        host: '127.0.0.1',
-        port: 8001,
-        strictPort: true,
+        host: '0.0.0.0',
+        port: 3000,
+        allowedHosts: true,
         watch: { ignored: ['**/.node/**', '**/excalidraw-assets/**'] },
     },
-    preview: { host: '127.0.0.1', port: 8001, strictPort: true },
+    preview: { host: '0.0.0.0', port: 3000, allowedHosts: true },
 });
